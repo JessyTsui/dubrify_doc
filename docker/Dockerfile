@@ -27,7 +27,7 @@ RUN node --input-type=module -e "import { rm } from 'fs/promises'; import { post
 FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=3001
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends nginx ca-certificates bash curl \
@@ -43,9 +43,9 @@ COPY --from=builder /app/.next/standalone ./standalone
 COPY --from=builder /app/.next/static ./standalone/.next/static
 COPY --from=builder /app/public ./standalone/public
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD curl -f http://127.0.0.1:8000/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD curl -f http://127.0.0.1:3000/ || exit 1
 
-EXPOSE 8000
+EXPOSE 3000
 
 ENTRYPOINT ["/bin/sh", "/start.sh"]
 CMD ["nginx", "-g", "daemon off;"]
