@@ -1,0 +1,726 @@
+---
+title: 代码示例
+description: 各种编程语言的Pandalla API代码示例和最佳实践
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+# 代码示例
+
+本页面提供了使用 Pandalla API 的完整代码示例，涵盖各种常见用例和编程语言。
+
+## 🚀 快速开始示例
+
+### 基础聊天补全
+
+<Tabs items={['Python', 'JavaScript', 'Go', 'cURL']}>
+  <Tab value="Python">
+```python
+from openai import OpenAI
+
+# 初始化客户端
+client = OpenAI(
+    base_url="https://api.pandalla.ai/v1",
+    api_key="sk-your-api-key"
+)
+
+# 简单对话
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "system", "content": "你是一个有帮助的AI助手。"},
+        {"role": "user", "content": "请解释什么是机器学习？"}
+    ],
+    max_tokens=500,
+    temperature=0.7
+)
+
+print(response.choices[0].message.content)
+```
+  </Tab>
+  <Tab value="JavaScript">
+```javascript
+import OpenAI from 'openai';
+
+// 初始化客户端
+const client = new OpenAI({
+    baseURL: 'https://api.pandalla.ai/v1',
+    apiKey: 'sk-your-api-key'
+});
+
+// 简单对话
+async function chatCompletion() {
+    try {
+        const response = await client.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                { role: 'system', content: '你是一个有帮助的AI助手。' },
+                { role: 'user', content: '请解释什么是机器学习？' }
+            ],
+            max_tokens: 500,
+            temperature: 0.7
+        });
+
+        console.log(response.choices[0].message.content);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+chatCompletion();
+```
+  </Tab>
+  <Tab value="Go">
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    
+    "github.com/pandalla/pandalla-go"
+)
+
+func main() {
+    client := pandalla.NewClient(
+        pandalla.WithAPIKey("sk-your-api-key"),
+        pandalla.WithBaseURL("https://api.pandalla.ai/v1"),
+    )
+
+    resp, err := client.ChatCompletion(context.Background(), pandalla.ChatCompletionRequest{
+        Model: "gpt-4o-mini",
+        Messages: []pandalla.Message{
+            {Role: "system", Content: "你是一个有帮助的AI助手。"},
+            {Role: "user", Content: "请解释什么是机器学习？"},
+        },
+        MaxTokens:   500,
+        Temperature: 0.7,
+    })
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println(resp.Choices[0].Message.Content)
+}
+```
+  </Tab>
+  <Tab value="cURL">
+```bash
+curl -X POST https://api.pandalla.ai/v1/chat/completions \
+  -H "Authorization: Bearer sk-your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4o-mini",
+    "messages": [
+      {"role": "system", "content": "你是一个有帮助的AI助手。"},
+      {"role": "user", "content": "请解释什么是机器学习？"}
+    ],
+    "max_tokens": 500,
+    "temperature": 0.7
+  }'
+```
+  </Tab>
+</Tabs>
+
+## 🌊 流式响应示例
+
+### 实时文本流
+
+<Tabs items={['Python', 'JavaScript']}>
+  <Tab value="Python">
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.pandalla.ai/v1",
+    api_key="sk-your-api-key"
+)
+
+def stream_chat():
+    stream = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "user", "content": "写一首关于人工智能的诗"}
+        ],
+        stream=True,
+        max_tokens=300
+    )
+
+    print("AI正在创作，请稍候...")
+    for chunk in stream:
+        if chunk.choices[0].delta.content is not None:
+            print(chunk.choices[0].delta.content, end="", flush=True)
+    
+    print("\n\n创作完成！")
+
+stream_chat()
+```
+  </Tab>
+  <Tab value="JavaScript">
+```javascript
+import OpenAI from 'openai';
+
+const client = new OpenAI({
+    baseURL: 'https://api.pandalla.ai/v1',
+    apiKey: 'sk-your-api-key'
+});
+
+async function streamChat() {
+    try {
+        const stream = await client.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                { role: 'user', content: '写一首关于人工智能的诗' }
+            ],
+            stream: true,
+            max_tokens: 300
+        });
+
+        console.log('AI正在创作，请稍候...');
+        
+        for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content;
+            if (content) {
+                process.stdout.write(content);
+            }
+        }
+        
+        console.log('\n\n创作完成！');
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+streamChat();
+```
+  </Tab>
+</Tabs>
+
+## 🎨 多模态示例
+
+### 图像理解
+
+<Tabs items={['Python', 'JavaScript']}>
+  <Tab value="Python">
+```python
+import base64
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.pandalla.ai/v1",
+    api_key="sk-your-api-key"
+)
+
+def encode_image(image_path):
+    """将图片编码为base64格式"""
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
+
+def analyze_image(image_path, question="请描述这张图片"):
+    """分析图片内容"""
+    
+    # 编码图片
+    base64_image = encode_image(image_path)
+    
+    response = client.chat.completions.create(
+        model="gpt-4-vision-preview",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": question
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image}"
+                        }
+                    }
+                ]
+            }
+        ],
+        max_tokens=500
+    )
+    
+    return response.choices[0].message.content
+
+# 使用示例
+try:
+    result = analyze_image("./example.jpg", "这张图片中有什么？")
+    print("图片分析结果：")
+    print(result)
+except FileNotFoundError:
+    print("图片文件不存在，请检查路径")
+except Exception as e:
+    print(f"分析失败：{e}")
+```
+  </Tab>
+  <Tab value="JavaScript">
+```javascript
+import OpenAI from 'openai';
+import fs from 'fs';
+
+const client = new OpenAI({
+    baseURL: 'https://api.pandalla.ai/v1',
+    apiKey: 'sk-your-api-key'
+});
+
+function encodeImage(imagePath) {
+    // 读取并编码图片
+    const imageBuffer = fs.readFileSync(imagePath);
+    return imageBuffer.toString('base64');
+}
+
+async function analyzeImage(imagePath, question = "请描述这张图片") {
+    try {
+        // 编码图片
+        const base64Image = encodeImage(imagePath);
+        
+        const response = await client.chat.completions.create({
+            model: "gpt-4-vision-preview",
+            messages: [
+                {
+                    role: "user",
+                    content: [
+                        {
+                            type: "text",
+                            text: question
+                        },
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url: `data:image/jpeg;base64,${base64Image}`
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens: 500
+        });
+        
+        return response.choices[0].message.content;
+        
+    } catch (error) {
+        throw new Error(`图片分析失败: ${error.message}`);
+    }
+}
+
+// 使用示例
+analyzeImage('./example.jpg', '这张图片中有什么？')
+    .then(result => {
+        console.log('图片分析结果：');
+        console.log(result);
+    })
+    .catch(error => {
+        console.error(error.message);
+    });
+```
+  </Tab>
+</Tabs>
+
+## 🔄 多模型对比
+
+### 同时调用多个模型
+
+```python
+from openai import OpenAI
+import asyncio
+import time
+
+client = OpenAI(
+    base_url="https://api.pandalla.ai/v1",
+    api_key="sk-your-api-key"
+)
+
+async def compare_models():
+    """比较不同模型的响应"""
+    
+    prompt = "请用一句话解释量子计算的核心概念"
+    models = ["gpt-4o", "gpt-4o-mini", "claude-3-5-sonnet-20241022", "gemini-1.5-flash-002"]
+    
+    async def get_response(model):
+        """获取单个模型的响应"""
+        start_time = time.time()
+        
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=100,
+                temperature=0.7
+            )
+            
+            end_time = time.time()
+            
+            return {
+                "model": model,
+                "response": response.choices[0].message.content,
+                "response_time": round(end_time - start_time, 2),
+                "tokens": response.usage.total_tokens if hasattr(response, 'usage') else None
+            }
+            
+        except Exception as e:
+            return {
+                "model": model,
+                "response": f"错误: {str(e)}",
+                "response_time": None,
+                "tokens": None
+            }
+    
+    # 并发请求所有模型
+    print(f"问题: {prompt}")
+    print("-" * 80)
+    
+    tasks = [get_response(model) for model in models]
+    results = await asyncio.gather(*tasks)
+    
+    # 打印结果
+    for result in results:
+        print(f"\n🤖 模型: {result['model']}")
+        print(f"⏱️  响应时间: {result['response_time']}秒")
+        if result['tokens']:
+            print(f"🔢 Token使用: {result['tokens']}")
+        print(f"📝 回答: {result['response']}")
+        print("-" * 80)
+
+# 运行比较
+asyncio.run(compare_models())
+```
+
+## 🎬 视频生成示例
+
+### Sora 视频生成
+
+```python
+import asyncio
+import time
+from openai import AsyncOpenAI
+
+client = AsyncOpenAI(
+    base_url="https://api.pandalla.ai/v1",
+    api_key="sk-your-api-key"
+)
+
+async def create_video_with_progress():
+    """创建视频并显示进度"""
+    
+    # 创建视频任务
+    video = await client.videos.create(
+        model="sora-2",
+        prompt="一只可爱的小猫在阳光明媚的花园里玩耍，背景是五颜六色的花朵",
+        seconds=4,
+        size="1280x720"
+    )
+    
+    print(f"✅ 视频任务已创建")
+    print(f"📹 Video ID: {video.id}")
+    print(f"📝 描述: {video.prompt}")
+    print(f"⏳ 开始生成视频，请耐心等待...")
+    
+    # 轮询检查状态
+    while True:
+        video_status = await client.videos.retrieve(video.id)
+        status = video_status.status
+        
+        if status == "completed":
+            print(f"\n🎉 视频生成完成！")
+            print(f"📁 可以下载视频了")
+            
+            # 可选：直接下载视频
+            # content = await client.videos.download_content(video.id)
+            # content.write_to_file(f"{video.id}.mp4")
+            # print(f"💾 视频已保存为 {video.id}.mp4")
+            
+            break
+        elif status == "failed":
+            print(f"\n❌ 视频生成失败")
+            break
+        else:
+            # 显示进度动画
+            for i in range(3):
+                print(f"\r{'⏳ 生成中' + '.' * (i + 1):<15}", end="", flush=True)
+                await asyncio.sleep(1)
+        
+        await asyncio.sleep(5)  # 每5秒检查一次
+
+# 运行示例
+asyncio.run(create_video_with_progress())
+```
+
+## 🛠️ 实用工具类
+
+### API客户端封装
+
+```python
+import os
+import logging
+from typing import Optional, List, Dict, Any
+from openai import OpenAI
+
+class PandallaClient:
+    """Pandalla API客户端封装类"""
+    
+    def __init__(self, api_key: Optional[str] = None):
+        """
+        初始化客户端
+        
+        Args:
+            api_key: API密钥，如果不提供则从环境变量读取
+        """
+        self.api_key = api_key or os.getenv("PANDALLA_API_KEY")
+        if not self.api_key:
+            raise ValueError("API密钥未提供，请设置PANDALLA_API_KEY环境变量或传入api_key参数")
+        
+        self.client = OpenAI(
+            base_url="https://api.pandalla.ai/v1",
+            api_key=self.api_key
+        )
+        
+        # 设置日志
+        self.logger = logging.getLogger(__name__)
+    
+    def chat(self, 
+             message: str, 
+             model: str = "gpt-4o-mini",
+             system_prompt: Optional[str] = None,
+             temperature: float = 0.7,
+             max_tokens: int = 1000,
+             stream: bool = False) -> str:
+        """
+        简化的聊天接口
+        
+        Args:
+            message: 用户消息
+            model: 使用的模型
+            system_prompt: 系统提示
+            temperature: 温度参数
+            max_tokens: 最大token数
+            stream: 是否使用流式响应
+            
+        Returns:
+            AI的回复内容
+        """
+        try:
+            messages = []
+            
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
+            
+            messages.append({"role": "user", "content": message})
+            
+            response = self.client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=stream
+            )
+            
+            if stream:
+                return self._handle_stream(response)
+            else:
+                return response.choices[0].message.content
+                
+        except Exception as e:
+            self.logger.error(f"聊天请求失败: {e}")
+            raise
+    
+    def _handle_stream(self, stream):
+        """处理流式响应"""
+        content = ""
+        for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                delta = chunk.choices[0].delta.content
+                content += delta
+                print(delta, end="", flush=True)
+        print()  # 换行
+        return content
+    
+    def translate(self, text: str, target_lang: str = "中文", model: str = "gpt-4o-mini") -> str:
+        """
+        翻译文本
+        
+        Args:
+            text: 待翻译的文本
+            target_lang: 目标语言
+            model: 使用的模型
+            
+        Returns:
+            翻译结果
+        """
+        prompt = f"请将以下文本翻译成{target_lang}，只返回翻译结果：\n\n{text}"
+        return self.chat(prompt, model=model, temperature=0.3)
+    
+    def summarize(self, text: str, length: str = "中等", model: str = "gpt-4o-mini") -> str:
+        """
+        文本摘要
+        
+        Args:
+            text: 待摘要的文本
+            length: 摘要长度（简短/中等/详细）
+            model: 使用的模型
+            
+        Returns:
+            摘要结果
+        """
+        length_map = {
+            "简短": "用1-2句话",
+            "中等": "用3-5句话", 
+            "详细": "用一段话"
+        }
+        
+        length_desc = length_map.get(length, "用3-5句话")
+        prompt = f"请{length_desc}总结以下内容的要点：\n\n{text}"
+        
+        return self.chat(prompt, model=model, temperature=0.5)
+
+# 使用示例
+if __name__ == "__main__":
+    # 初始化客户端
+    pandalla = PandallaClient()
+    
+    # 简单聊天
+    response = pandalla.chat("解释一下什么是深度学习")
+    print("AI回复:", response)
+    
+    # 翻译
+    translation = pandalla.translate("Hello, how are you today?", "中文")
+    print("翻译结果:", translation)
+    
+    # 摘要
+    long_text = """
+    人工智能(AI)是计算机科学的一个分支，旨在创建能够执行通常需要人类智能的任务的系统。
+    这些任务包括学习、推理、感知、理解自然语言以及解决问题。AI的发展经历了多个阶段，
+    从早期的符号AI到现代的深度学习。深度学习是机器学习的一个子领域，使用多层神经网络
+    来模拟人脑的工作方式。近年来，深度学习在图像识别、语音识别和自然语言处理等领域
+    取得了突破性进展。
+    """
+    summary = pandalla.summarize(long_text, "简短")
+    print("摘要:", summary)
+```
+
+## 🚨 错误处理示例
+
+### 完整的错误处理
+
+```python
+import time
+import random
+from openai import OpenAI
+from typing import Optional
+
+client = OpenAI(
+    base_url="https://api.pandalla.ai/v1",
+    api_key="sk-your-api-key"
+)
+
+def robust_chat_with_retry(
+    messages: list,
+    model: str = "gpt-4o-mini",
+    max_retries: int = 3,
+    base_delay: float = 1.0
+) -> Optional[str]:
+    """
+    带重试机制的聊天请求
+    
+    Args:
+        messages: 消息列表
+        model: 模型名称
+        max_retries: 最大重试次数
+        base_delay: 基础延迟时间
+        
+    Returns:
+        AI回复或None（如果所有重试都失败）
+    """
+    
+    for attempt in range(max_retries + 1):
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                max_tokens=1000,
+                temperature=0.7
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            error_message = str(e)
+            
+            # 检查错误类型
+            if "401" in error_message:
+                print("❌ API密钥无效，请检查密钥设置")
+                return None
+                
+            elif "403" in error_message:
+                print("❌ 权限不足，请检查账户余额或权限")
+                return None
+                
+            elif "404" in error_message:
+                print(f"❌ 模型 {model} 不存在或不可用")
+                return None
+                
+            elif "429" in error_message:
+                if attempt < max_retries:
+                    # 速率限制，使用指数退避重试
+                    delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                    print(f"⏳ 速率限制，{delay:.1f}秒后重试... (尝试 {attempt + 1}/{max_retries})")
+                    time.sleep(delay)
+                    continue
+                else:
+                    print("❌ 达到速率限制，重试次数已用完")
+                    return None
+                    
+            elif "500" in error_message or "503" in error_message:
+                if attempt < max_retries:
+                    # 服务器错误，重试
+                    delay = base_delay * (attempt + 1)
+                    print(f"🔄 服务器错误，{delay}秒后重试... (尝试 {attempt + 1}/{max_retries})")
+                    time.sleep(delay)
+                    continue
+                else:
+                    print("❌ 服务器错误，重试次数已用完")
+                    return None
+                    
+            else:
+                print(f"❌ 未知错误: {error_message}")
+                if attempt < max_retries:
+                    delay = base_delay
+                    print(f"🔄 {delay}秒后重试... (尝试 {attempt + 1}/{max_retries})")
+                    time.sleep(delay)
+                    continue
+                else:
+                    return None
+    
+    return None
+
+# 使用示例
+messages = [
+    {"role": "system", "content": "你是一个有帮助的AI助手"},
+    {"role": "user", "content": "请介绍一下机器学习的基本概念"}
+]
+
+result = robust_chat_with_retry(messages)
+if result:
+    print("✅ 请求成功:")
+    print(result)
+else:
+    print("❌ 请求最终失败")
+```
+
+<Callout type="info">
+这些示例展示了Pandalla API的各种使用场景。你可以根据自己的需求调整和扩展这些代码。更多示例和最新功能，请参考 [API参考文档](/docs/api-reference)。
+</Callout>
+
+## 📚 更多资源
+
+- [API 使用指南](/docs/guide) - 深入了解API功能
+- [Sora 视频生成](/docs/sora) - 视频生成专题
+- [身份认证](/docs/authentication) - API密钥管理
+- [API 参考](/docs/api-reference) - 完整的API文档

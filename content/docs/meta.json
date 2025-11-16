@@ -1,0 +1,12 @@
+{
+  "title": "Pandalla API Documentation",
+  "pages": [
+    "index",
+    "getting-started",
+    "guide",
+    "sora",
+    "api-reference",
+    "examples",
+    "ai-features"
+  ]
+}

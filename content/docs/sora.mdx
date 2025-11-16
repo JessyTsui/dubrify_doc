@@ -1,0 +1,429 @@
+---
+title: Sora API
+description: 使用Sora模型生成高质量AI视频的完整指南，包含API接口、代码示例和最佳实践
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+# Pandalla Sora 视频生成 API
+
+本文档介绍如何使用我们的 API 创建、查询和下载 AI 生成的视频。
+
+## 🎬 概述
+
+通过 Pandalla Sora API，您可以：
+- 使用文本提示生成高质量视频
+- 上传参考图像指导视频生成
+- 对现有视频进行 Remix 编辑
+- 支持多种分辨率和时长选项
+
+## 🔑 认证
+
+所有 API 请求都需要在 Header 中包含认证信息：
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+---
+
+## 📚 API 端点
+
+### 1. 创建视频生成任务
+
+**端点**: `POST https://api.pandalla.ai/v1/videos`
+
+**请求参数**:
+
+| 参数 | 类型 | 必需 | 描述 |
+|------|------|------|------|
+| `prompt` | string | 是 | 视频生成的文本提示词 |
+| `model` | string | 否 | 模型选择：`sora-2`（默认）或 `sora-2-pro` |
+| `seconds` | integer | 否 | 视频时长：`4`（默认）、`8` 或 `12` 秒 |
+| `size` | string | 否 | 视频尺寸（详见下方说明） |
+| `input_reference` | file | 否 | 参考图像，用于指导视频生成 |
+
+#### 支持的视频尺寸
+
+<Cards>
+  <Card title="720x1280" description="9:16 竖屏，适用于移动端" />
+  <Card title="1280x720" description="16:9 横屏，适用于桌面端" />
+  <Card title="1024x1792" description="9:16 高清竖屏* (1.67x 价格)" />
+  <Card title="1792x1024" description="16:9 高清横屏* (1.67x 价格)" />
+</Cards>
+
+<Callout type="info">
+**注**: 根据OpenAI官方定价，1792p 分辨率价格为标准分辨率的 1.67 倍
+</Callout>
+
+#### 示例请求
+```bash
+curl -X POST 'https://api.pandalla.ai/v1/videos' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -F 'prompt="一只德文猫在人身上玩耍"' \
+  -F 'model="sora-2"' \
+  -F 'seconds="4"' \
+  -F 'size="1280x720"'
+```
+
+#### 响应示例
+```json
+{
+  "id": "video_xxxxxxxxxxxxx",
+  "status": "queued",
+  "created_at": 1234567890,
+  "model": "sora-2",
+  "prompt": "一只德文猫在人身上玩耍"
+}
+```
+
+### 2. 使用参考图像
+
+<Callout type="warning">
+**重要注意事项**:
+- `input_reference`需要以文件或文件流形式传入
+- 不能使用人物图片，否则会被拒绝
+- 图像尺寸必须和`size`参数完全一致
+- `sora-2`支持：`"720x1280", "1280x720"`
+- `sora-2-pro`支持：`"720x1280", "1280x720", "1024x1792", "1792x1024"`
+</Callout>
+
+#### Python示例
+```python
+import requests
+import os
+
+def create_video_with_image(prompt, image_path, model="sora-2", seconds=4, size="1280x720"):
+    """
+    使用参考图像创建视频
+    
+    Args:
+        prompt: 文本描述
+        image_path: 参考图像路径
+        model: 模型名称
+        seconds: 视频时长
+        size: 视频尺寸
+    
+    Returns:
+        str: video_id 或 None
+    """
+    # 检查图像文件是否存在
+    if not os.path.exists(image_path):
+        print(f"❌ 图像文件不存在: {image_path}")
+        return None
+    
+    url = "https://api.pandalla.ai/v1/videos"
+    headers = {
+        "Authorization": "Bearer YOUR_API_KEY"
+    }
+    
+    # 准备 multipart/form-data
+    files = {
+        'input_reference': ('image.png', open(image_path, 'rb'), 'image/png')
+    }
+    
+    data = {
+        'prompt': prompt,
+        'model': model,
+        'seconds': str(seconds),
+        'size': size
+    }
+    
+    response = requests.post(url, headers=headers, files=files, data=data)
+    
+    # 确保关闭文件
+    files['input_reference'][1].close()
+    
+    if response.status_code == 200:
+        result = response.json()
+        video_id = result.get('id')
+        return video_id
+    else:
+        print(f"❌ 创建失败 (HTTP {response.status_code})")
+        print(f"错误信息: {response.text}")
+        return None
+
+# 使用示例
+if __name__ == "__main__":
+    image_path = "../1.jpg"  # 替换为您的图像路径
+    prompt = "拓展一下这个场景"
+
+    # 创建视频
+    video_id = create_video_with_image(
+        prompt=prompt,
+        image_path=str(image_path),
+        model="sora-2",
+        seconds=4,
+        size="720x1280"
+    )
+    print("video_id: ", video_id)
+```
+
+### 3. 视频Remix
+
+**端点**: `GET https://api.pandalla.ai/v1/videos/{video_id}/remix`
+
+对已完成的视频进行风格化编辑和调整。
+
+#### 示例请求
+```bash
+curl -X GET 'https://api.pandalla.ai/v1/videos/video_xxxxxxxxxxxxx/remix' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Shift the color palette to teal, sand, and rust, with a warm backlight."
+  }'
+```
+
+<Callout type="info">
+**注意**: `video_id` 必须是前面步骤中已完成视频的ID，用于Remix操作。
+</Callout>
+
+### 4. 查询任务状态
+
+**端点**: `GET https://api.pandalla.ai/v1/videos/{video_id}`
+
+#### 示例请求
+```bash
+curl -X GET 'https://api.pandalla.ai/v1/videos/video_xxxxxxxxxxxxx' \
+  -H 'Authorization: Bearer YOUR_API_KEY'
+```
+
+#### 状态说明
+- `queued`: 任务已创建，等待处理
+- `in_progress`: 视频生成中
+- `completed`: 生成完成
+- `failed`: 生成失败
+
+### 5. 下载生成的视频
+
+**端点**: `GET https://api.pandalla.ai/v1/videos/{video_id}/content`
+
+#### 查询参数
+| 参数 | 类型 | 描述 |
+|------|------|------|
+| `variant` | string | 下载内容类型：`video`（默认）、`thumbnail`、`spritesheet` |
+
+#### 示例请求
+```bash
+curl -X GET 'https://api.pandalla.ai/v1/videos/video_xxxxxxxxxxxxx/content' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -o video.mp4
+```
+
+---
+
+## 🐍 SDK 使用示例
+
+### Python SDK 安装
+
+```bash
+pip install openai
+```
+
+### 基础使用示例
+
+```python
+from typing import Tuple, Optional, Literal
+from openai import OpenAI
+
+# 初始化客户端
+client = OpenAI(
+    api_key="YOUR_API_KEY",
+    base_url="https://api.pandalla.ai/v1"
+)
+
+def create_video(
+    prompt: str,
+    model: Literal["sora-2", "sora-2-pro"] = "sora-2",
+    seconds: Literal[4, 8, 12] = 4,
+    size: Literal["720x1280", "1280x720", "1024x1792", "1792x1024"] = "1280x720"
+) -> str:
+    """
+    创建视频生成任务
+    
+    Args:
+        prompt: 视频生成的文本提示词
+        model: 使用的模型，默认为 "sora-2"
+        seconds: 视频时长（秒），默认为 4
+        size: 视频尺寸，默认为 "1280x720"
+        
+    Returns:
+        str: 视频任务的唯一标识符 (video_id)
+    """
+    video = client.videos.create(
+        model=model,
+        prompt=prompt,
+        seconds=seconds,
+        size=size
+    )
+    print(f"视频生成任务已创建，ID: {video.id}")
+    return video.id
+
+def check_status(video_id: str) -> Tuple[str, int]:
+    """
+    查询视频生成任务的状态和进度
+    
+    Args:
+        video_id: 视频任务的唯一标识符
+        
+    Returns:
+        Tuple[str, int]: 返回 (状态, 进度百分比) 元组
+            - 状态: "queued", "in_progress", "completed", "failed"
+            - 进度: 0-100 的整数
+    """
+    video = client.videos.retrieve(video_id)
+    return video.status, getattr(video, "progress", 0)
+
+# 使用示例
+if __name__ == "__main__":
+    # 创建视频
+    video_id: str = create_video(
+        prompt="小猫趴在桌子上陪主人工作",
+        model="sora-2",
+        seconds=4
+    )
+    
+    # 查询状态
+    status, progress = check_status(video_id)
+    print(f"状态: {status}, 进度: {progress}%")
+```
+
+### 异步处理示例
+
+```python
+import asyncio
+from typing import Optional, Literal
+from openai import AsyncOpenAI
+from openai.types.video import Video
+
+# 初始化异步客户端
+client = AsyncOpenAI(
+    api_key="YOUR_API_KEY",
+    base_url="https://api.pandalla.ai/v1"
+)
+
+async def generate_video_with_polling(
+    prompt: str,
+    model: Literal["sora-2", "sora-2-pro"] = "sora-2",
+    seconds: Literal[4, 8, 12] = 4,
+    size: Literal["720x1280", "1280x720", "1024x1792", "1792x1024"] = "1280x720",
+    polling_interval: int = 5
+) -> Optional[str]:
+    """
+    异步创建视频并轮询直到完成
+    
+    Args:
+        prompt: 视频生成的文本提示词
+        model: 使用的模型，默认为 "sora-2"
+        seconds: 视频时长（秒），默认为 4
+        size: 视频尺寸，默认为 "1280x720"
+        polling_interval: 轮询间隔（秒），默认为 5
+        
+    Returns:
+        Optional[str]: 成功时返回 video_id，失败时返回 None
+    """
+    video: Optional[Video] = None
+    
+    try:
+        # 创建视频任务
+        video = await client.videos.create(
+            model=model,
+            prompt=prompt,
+            seconds=seconds,
+            size=size
+        )
+        
+        # 立即输出 video_id，防止网络中断丢失
+        print(f"✅ 视频任务创建成功！")
+        print(f"📹 Video ID: {video.id}")
+        print(f"💡 提示：如果连接中断，可以使用此 ID 查询任务状态")
+        print(f"⏳ 等待视频生成完成...\n")
+        
+        # 轮询检查状态
+        while video.status in ["queued", "in_progress"]:
+            await asyncio.sleep(polling_interval)
+            video = await client.videos.retrieve(video.id)
+            print(f"   状态: {video.status}...")
+        
+        if video.status == "completed":
+            print(f"\n🎉 视频生成完成！")
+            print(f"📹 Video ID: {video.id}")
+            print(f"🔗 下载命令:")
+            print(f"    curl -L -H 'Authorization: Bearer YOUR_API_KEY' \\")
+            print(f"         'https://api.pandalla.ai/v1/videos/{video.id}/content' \\")
+            print(f"         -o {video.id}.mp4")
+            return video.id
+        else:
+            print(f"\n❌ 视频生成失败。状态: {video.status}")
+            return None
+            
+    except Exception as e:
+        print(f"\n⚠️  发生错误: {str(e)}")
+        if video is not None:
+            print(f"📹 Video ID: {video.id}")
+            print(f"💡 可以稍后使用此 ID 查询任务状态")
+        return None
+
+# 使用示例
+if __name__ == "__main__":
+    # 运行异步任务
+    video_id = asyncio.run(generate_video_with_polling(
+        prompt="一只可爱的小猫在阳光下玩耍",
+        model="sora-2",
+        seconds=4,
+        size="1280x720"
+    ))
+```
+
+---
+
+## 💡 最佳实践
+
+### 1. 💾 保存 Video ID
+创建任务后立即保存返回的 video_id，以防网络中断
+
+### 2. ⏰ 合理设置轮询间隔
+建议每 5-10 秒查询一次状态，避免频繁请求
+
+### 3. 🛡️ 错误处理
+始终包含异常处理，确保程序稳定性
+
+### 4. 🔄 批量处理
+对于多个视频任务，建议并行创建，串行查询
+
+### 5. 📝 提示词优化
+- 使用具体、详细的描述
+- 包含动作、场景、风格等关键信息
+- 避免抽象或模糊的表述
+
+#### 优秀提示词示例
+
+<Tabs items={['动物场景', '自然风光', '抽象艺术']}>
+  <Tab value="动物场景">
+```
+一只橘色的小猫在温暖的阳光下，
+在绿色的草地上慢慢踱步，
+偶尔停下来闻闻花朵，
+背景是模糊的蓝天和白云
+```
+  </Tab>
+  <Tab value="自然风光">
+```
+清晨的森林中，
+薄雾在高大的松树间缭绕，
+金色的阳光透过树叶洒下斑驳的光影，
+远处传来鸟儿清脆的歌声
+```
+  </Tab>
+  <Tab value="抽象艺术">
+```
+流动的彩色油彩在白色画布上缓缓混合，
+红色、蓝色和金色相互交融，
+形成梦幻般的抽象图案，
+整个过程优雅而富有诗意
+```
+  </Tab>
+</Tabs>
+
