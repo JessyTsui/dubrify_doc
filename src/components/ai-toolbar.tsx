@@ -16,6 +16,7 @@ interface AIToolbarProps {
   pageUrl?: string;
   pageTitle?: string;
   className?: string;
+  markdownContent?: string;
 }
 
 type OpenPlatform = 'github' | 'chatgpt' | 'claude';
@@ -32,6 +33,7 @@ export function AIToolbar({
   pageUrl,
   pageTitle = 'Document',
   className = '',
+  markdownContent,
 }: AIToolbarProps) {
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -87,16 +89,24 @@ export function AIToolbar({
     }
   ];
 
+  const normalizedMarkdown = markdownContent?.trim();
+
   const copyContent = async () => {
     try {
-      const article =
-        document.querySelector('article, main, [role="main"], .prose');
-      const textContent = article?.textContent?.trim() || '';
-      const content = textContent
-        ? `# ${pageTitle}\n\n${textContent}`
-        : fullUrl || baseUrl;
+      if (normalizedMarkdown) {
+        await navigator.clipboard.writeText(normalizedMarkdown);
+      } else {
+        const article =
+          document.querySelector('article, main, [role="main"], .prose');
+        const textContent = article?.textContent?.trim() || '';
+        const safeTitle = pageTitle.trim() || 'Document';
+        const content = textContent
+          ? `# ${safeTitle}\n\n${textContent}`
+          : fullUrl || baseUrl;
 
-      await navigator.clipboard.writeText(content);
+        await navigator.clipboard.writeText(content);
+      }
+
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {

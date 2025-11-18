@@ -1,0 +1,54 @@
+---
+title: 文件请求 OSS_URL
+description: 通过 OSS_URL 参数在 Gemini、Sora 等模型请求中引用远程文件。
+---
+
+# 文件请求 OSS_URL
+
+由于 Gemini、Sora 等模型仅支持文件流或 Base64，不支持直接传入 URL，我们新增 `OSS_URL` 参数来让请求能够引用远程文件。当前 Gemini 与 Sora 均已支持该能力。
+
+## Gemini 示例
+
+```python
+import json
+import requests
+
+if __name__ == "__main__":
+    api_key = "sk-xxxxxxx"
+    file_url = "https://xxxxxxxxxxxxxxxxx"
+    model = "gemini-2.5-flash"
+
+    payload = {
+        "contents": [
+            {
+                "role": "user",
+                "parts": [
+                    {"text": "请描述这个文件"},
+                ],
+            }
+        ],
+        "OSS_URL": file_url,
+    }
+    endpoint = f"https://api.pandalla.ai/v1beta/models/{model}:generateContent"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    resp = requests.post(
+        endpoint, headers=headers, data=json.dumps(payload), timeout=120
+    )
+    print(f"Status: {resp.status_code}")
+    print(resp.text)
+```
+
+## Sora 示例
+
+```bash
+curl -X POST 'https://api.pandalla.ai/v1/videos' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -F 'prompt="一只德文猫在人身上玩耍"' \
+  -F 'model="sora-2"' \
+  -F 'seconds="4"' \
+  -F 'OSS_URL=https://xxxxxxxxxxxxxxx' \
+  -F 'size="1280x720"'
+```

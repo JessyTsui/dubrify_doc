@@ -1,4 +1,4 @@
-import { getPageImage, source } from '@/lib/source';
+import { getLLMText, getPageImage, source } from '@/lib/source';
 import {
   DocsBody,
   DocsDescription,
@@ -20,6 +20,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const docPath =
     slugSegments.length > 0 ? `/docs/${slugSegments.join('/')}` : '/docs';
   const MDX = page.data.body;
+  const markdownContent = await getLLMText(page);
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
@@ -36,7 +37,11 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
         {page.data.description}
       </DocsDescription>
       <div className="mt-1 mb-8">
-        <AIToolbar pageUrl={docPath} pageTitle={page.data.title} />
+        <AIToolbar
+          pageUrl={docPath}
+          pageTitle={page.data.title}
+          markdownContent={markdownContent}
+        />
       </div>
       <DocsBody>
         <MDX

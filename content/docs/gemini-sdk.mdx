@@ -1,0 +1,38 @@
+---
+title: Gemini SDK 设置
+description: 使用 Pandalla API 的 Gemini 代理端点来调用官方 Gemini SDK。
+---
+
+# Gemini SDK 设置
+
+可以使用官方 Gemini SDK 访问我们转发后的 Gemini 模型。与直接复用 OpenAI SDK 相比，原生 SDK 在处理独有参数时更加顺手。
+
+> ⚠️ 注意：目前 Gemini API 仅支持 `Gemini` 系列模型，其他模型无法通过此 SDK 调用。
+
+## 安装官方 SDK
+
+### Python
+
+确保使用 [Python 3.9+](https://www.python.org/downloads/)，然后通过 [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/) 安装 [google-genai](https://pypi.org/project/google-genai/)：
+
+```bash
+pip install google-genai
+```
+
+示例代码：
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    http_options=types.HttpOptions(base_url="https://api.pandalla.ai/gemini"),
+    api_key="YOUR_API_KEY",
+)
+
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents="Explain how AI works in a few words",
+)
+print(response.text)
+```

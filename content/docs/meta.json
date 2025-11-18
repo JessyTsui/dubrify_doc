@@ -7,6 +7,8 @@
     "sora",
     "api-reference",
     "examples",
-    "ai-features"
+    "ai-features",
+    "gemini-sdk",
+    "oss-url-cache"
   ]
 }
