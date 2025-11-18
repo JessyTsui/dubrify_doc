@@ -20,6 +20,8 @@ COPY --from=deps /app/source.config.ts ./source.config.ts
 COPY --from=deps /app/tsconfig.json ./tsconfig.json
 COPY . .
 
+RUN node scripts/prepare-fonts.mjs
+
 RUN mkdir -p public
 
 RUN node --input-type=module -e "import { rm } from 'fs/promises'; import { postInstall } from 'fumadocs-mdx/next'; await rm('.source',{recursive:true,force:true}); await postInstall('source.config.ts','.source');" \
