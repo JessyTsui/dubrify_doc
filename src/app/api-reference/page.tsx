@@ -47,16 +47,13 @@ export default function ApiReferencePage() {
       <div className="flex-1">
         <ApiReferenceReact
           configuration={{
-            spec: {
-              url: '/openapi.json',
-            },
+            url: '/openapi.json',
             metaData: {
               title: 'Dubrify API Reference',
               description: 'Dubrify API 接口文档',
             },
             theme: 'kepler',
             hideModels: false,
-            hideDownloadButton: false,
             darkMode: true,
             layout: 'modern',
           }}
