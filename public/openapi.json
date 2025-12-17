@@ -1,0 +1,681 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Dubrify API",
+    "description": "Dubrify API 提供统一的 AI 模型接入服务，完全兼容 OpenAI API 格式。支持 GPT、Claude、Gemini 等主流模型。\n\n## 认证方式\n所有 API 请求需要在 Header 中携带 API Key：\n```\nAuthorization: Bearer YOUR_API_KEY\n```\n\n## 基础地址\n- 主地址：`https://api.pandalla.ai`\n- 备用地址：`https://api.dubrify.com`",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Dubrify Support",
+      "url": "https://doc.dubrify.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.pandalla.ai",
+      "description": "主服务器"
+    },
+    {
+      "url": "https://api.dubrify.com",
+      "description": "备用服务器"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Chat",
+      "description": "对话补全相关接口"
+    },
+    {
+      "name": "Images",
+      "description": "图像生成相关接口"
+    },
+    {
+      "name": "Models",
+      "description": "模型管理相关接口"
+    },
+    {
+      "name": "Embeddings",
+      "description": "向量嵌入相关接口"
+    }
+  ],
+  "paths": {
+    "/v1/chat/completions": {
+      "post": {
+        "operationId": "createChatCompletion",
+        "summary": "创建对话补全",
+        "description": "根据提供的消息列表生成模型响应。支持流式输出和多轮对话。",
+        "tags": ["Chat"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCompletionRequest"
+              },
+              "examples": {
+                "simple": {
+                  "summary": "简单对话",
+                  "value": {
+                    "model": "gpt-4o-mini",
+                    "messages": [
+                      {"role": "user", "content": "你好，请介绍一下你自己"}
+                    ]
+                  }
+                },
+                "with_system": {
+                  "summary": "带系统提示",
+                  "value": {
+                    "model": "gpt-4o",
+                    "messages": [
+                      {"role": "system", "content": "你是一个专业的编程助手"},
+                      {"role": "user", "content": "如何用 Python 读取 JSON 文件？"}
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 1000
+                  }
+                },
+                "streaming": {
+                  "summary": "流式输出",
+                  "value": {
+                    "model": "claude-3-5-sonnet-20241022",
+                    "messages": [
+                      {"role": "user", "content": "写一首关于春天的诗"}
+                    ],
+                    "stream": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回对话补全结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCompletionResponse"
+                },
+                "example": {
+                  "id": "chatcmpl-abc123",
+                  "object": "chat.completion",
+                  "created": 1702685778,
+                  "model": "gpt-4o-mini",
+                  "choices": [
+                    {
+                      "index": 0,
+                      "message": {
+                        "role": "assistant",
+                        "content": "你好！我是一个 AI 助手，很高兴为你服务。"
+                      },
+                      "finish_reason": "stop"
+                    }
+                  ],
+                  "usage": {
+                    "prompt_tokens": 10,
+                    "completion_tokens": 20,
+                    "total_tokens": 30
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求频率超限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "operationId": "createImage",
+        "summary": "生成图像",
+        "description": "根据文本提示生成图像。支持 DALL-E 2、DALL-E 3 等模型。",
+        "tags": ["Images"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "basic": {
+                  "summary": "基础图像生成",
+                  "value": {
+                    "model": "dall-e-3",
+                    "prompt": "一只可爱的橘猫在阳光下打盹",
+                    "n": 1,
+                    "size": "1024x1024"
+                  }
+                },
+                "hd_quality": {
+                  "summary": "高清图像",
+                  "value": {
+                    "model": "dall-e-3",
+                    "prompt": "未来城市的天际线，赛博朋克风格",
+                    "n": 1,
+                    "size": "1792x1024",
+                    "quality": "hd",
+                    "style": "vivid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功生成图像",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageGenerationResponse"
+                },
+                "example": {
+                  "created": 1702685778,
+                  "data": [
+                    {
+                      "url": "https://example.com/image.png",
+                      "revised_prompt": "A cute orange tabby cat napping in warm sunlight..."
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/models": {
+      "get": {
+        "operationId": "listModels",
+        "summary": "获取模型列表",
+        "description": "返回当前可用的所有模型列表。",
+        "tags": ["Models"],
+        "responses": {
+          "200": {
+            "description": "成功返回模型列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelList"
+                },
+                "example": {
+                  "object": "list",
+                  "data": [
+                    {
+                      "id": "gpt-4o",
+                      "object": "model",
+                      "created": 1698959748,
+                      "owned_by": "openai"
+                    },
+                    {
+                      "id": "gpt-4o-mini",
+                      "object": "model",
+                      "created": 1698959748,
+                      "owned_by": "openai"
+                    },
+                    {
+                      "id": "claude-3-5-sonnet-20241022",
+                      "object": "model",
+                      "created": 1698959748,
+                      "owned_by": "anthropic"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/models/{model}": {
+      "get": {
+        "operationId": "retrieveModel",
+        "summary": "获取模型详情",
+        "description": "获取指定模型的详细信息。",
+        "tags": ["Models"],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "description": "模型 ID",
+            "schema": {
+              "type": "string"
+            },
+            "example": "gpt-4o"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功返回模型详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "模型不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/embeddings": {
+      "post": {
+        "operationId": "createEmbedding",
+        "summary": "创建向量嵌入",
+        "description": "将输入文本转换为向量表示，可用于语义搜索、聚类等场景。",
+        "tags": ["Embeddings"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmbeddingRequest"
+              },
+              "example": {
+                "model": "text-embedding-3-small",
+                "input": "这是一段需要转换为向量的文本"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回向量嵌入",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmbeddingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "在 [令牌管理页面](https://api.pandalla.ai/token) 获取 API Key"
+      }
+    },
+    "schemas": {
+      "ChatCompletionRequest": {
+        "type": "object",
+        "required": ["model", "messages"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "模型 ID",
+            "enum": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo", "claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229", "gemini-1.5-flash-002", "gemini-1.5-pro-002"],
+            "example": "gpt-4o-mini"
+          },
+          "messages": {
+            "type": "array",
+            "description": "对话消息列表",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
+          },
+          "temperature": {
+            "type": "number",
+            "description": "采样温度，0-2 之间，值越高输出越随机",
+            "minimum": 0,
+            "maximum": 2,
+            "default": 1,
+            "example": 0.7
+          },
+          "max_tokens": {
+            "type": "integer",
+            "description": "最大生成 token 数",
+            "example": 1000
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "是否启用流式输出",
+            "default": false
+          },
+          "top_p": {
+            "type": "number",
+            "description": "核采样参数",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 1
+          },
+          "frequency_penalty": {
+            "type": "number",
+            "description": "频率惩罚参数，-2 到 2 之间",
+            "minimum": -2,
+            "maximum": 2,
+            "default": 0
+          },
+          "presence_penalty": {
+            "type": "number",
+            "description": "存在惩罚参数，-2 到 2 之间",
+            "minimum": -2,
+            "maximum": 2,
+            "default": 0
+          }
+        }
+      },
+      "Message": {
+        "type": "object",
+        "required": ["role", "content"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "description": "消息角色",
+            "enum": ["system", "user", "assistant"]
+          },
+          "content": {
+            "type": "string",
+            "description": "消息内容"
+          }
+        }
+      },
+      "ChatCompletionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "唯一请求 ID"
+          },
+          "object": {
+            "type": "string",
+            "enum": ["chat.completion"]
+          },
+          "created": {
+            "type": "integer",
+            "description": "创建时间戳"
+          },
+          "model": {
+            "type": "string",
+            "description": "使用的模型"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Choice"
+            }
+          },
+          "usage": {
+            "$ref": "#/components/schemas/Usage"
+          }
+        }
+      },
+      "Choice": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer"
+          },
+          "message": {
+            "$ref": "#/components/schemas/Message"
+          },
+          "finish_reason": {
+            "type": "string",
+            "enum": ["stop", "length", "content_filter"]
+          }
+        }
+      },
+      "Usage": {
+        "type": "object",
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer",
+            "description": "输入 token 数"
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "description": "输出 token 数"
+          },
+          "total_tokens": {
+            "type": "integer",
+            "description": "总 token 数"
+          }
+        }
+      },
+      "ImageGenerationRequest": {
+        "type": "object",
+        "required": ["prompt"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "模型 ID",
+            "enum": ["dall-e-2", "dall-e-3"],
+            "default": "dall-e-3"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "图像描述文本",
+            "maxLength": 4000,
+            "example": "一只可爱的橘猫在阳光下打盹"
+          },
+          "n": {
+            "type": "integer",
+            "description": "生成图片数量",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 1
+          },
+          "size": {
+            "type": "string",
+            "description": "图片尺寸",
+            "enum": ["256x256", "512x512", "1024x1024", "1024x1792", "1792x1024"],
+            "default": "1024x1024"
+          },
+          "quality": {
+            "type": "string",
+            "description": "图片质量（仅 dall-e-3）",
+            "enum": ["standard", "hd"],
+            "default": "standard"
+          },
+          "style": {
+            "type": "string",
+            "description": "图片风格（仅 dall-e-3）",
+            "enum": ["vivid", "natural"],
+            "default": "vivid"
+          },
+          "response_format": {
+            "type": "string",
+            "description": "返回格式",
+            "enum": ["url", "b64_json"],
+            "default": "url"
+          }
+        }
+      },
+      "ImageGenerationResponse": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "integer",
+            "description": "创建时间戳"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "description": "图片 URL"
+                },
+                "b64_json": {
+                  "type": "string",
+                  "description": "Base64 编码的图片"
+                },
+                "revised_prompt": {
+                  "type": "string",
+                  "description": "模型修正后的提示词"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ModelList": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": ["list"]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Model"
+            }
+          }
+        }
+      },
+      "Model": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "模型 ID"
+          },
+          "object": {
+            "type": "string",
+            "enum": ["model"]
+          },
+          "created": {
+            "type": "integer",
+            "description": "创建时间戳"
+          },
+          "owned_by": {
+            "type": "string",
+            "description": "模型提供商"
+          }
+        }
+      },
+      "EmbeddingRequest": {
+        "type": "object",
+        "required": ["model", "input"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "模型 ID",
+            "enum": ["text-embedding-3-small", "text-embedding-3-large", "text-embedding-ada-002"],
+            "example": "text-embedding-3-small"
+          },
+          "input": {
+            "oneOf": [
+              {"type": "string"},
+              {"type": "array", "items": {"type": "string"}}
+            ],
+            "description": "输入文本或文本数组"
+          },
+          "dimensions": {
+            "type": "integer",
+            "description": "输出向量维度（仅 text-embedding-3 系列）"
+          }
+        }
+      },
+      "EmbeddingResponse": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": ["list"]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "object": {
+                  "type": "string",
+                  "enum": ["embedding"]
+                },
+                "index": {
+                  "type": "integer"
+                },
+                "embedding": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "description": "向量数组"
+                }
+              }
+            }
+          },
+          "model": {
+            "type": "string"
+          },
+          "usage": {
+            "type": "object",
+            "properties": {
+              "prompt_tokens": {
+                "type": "integer"
+              },
+              "total_tokens": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "错误信息"
+              },
+              "type": {
+                "type": "string",
+                "description": "错误类型"
+              },
+              "code": {
+                "type": "string",
+                "description": "错误代码"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
