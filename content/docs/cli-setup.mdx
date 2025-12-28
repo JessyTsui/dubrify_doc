@@ -7,21 +7,130 @@ import { Callout } from 'fumadocs-ui/components/callout';
 import { Steps, Step } from 'fumadocs-ui/components/steps';
 import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
-# 使用 CC-Switch 管理 Claude Code/Codex
+# Claude Code/Codex 配置指南
 
-**强烈推荐使用 CC-Switch** 来管理您的 Claude Code 和 Codex API 配置。CC-Switch 是一个 AI CLI 一体化管理平台，让您可以轻松切换不同的 API 供应商，无需手动修改配置文件。
+本指南将帮助您完成 Claude Code 的安装和配置，快速接入 Dubrify AI 服务。
 
-## 为什么选择 CC-Switch？
+## 配置方式选择
 
-CC-Switch 提供了以下核心功能：
+我们提供两种配置方式：
+
+- **方法一：使用 CC-Switch（强烈推荐）** - 可视化管理工具，一键切换配置，无需手动设置环境变量
+- **方法二：手动设置环境变量** - 临时方案，每次终端会话都需要重新设置，不推荐日常使用
+
+<Callout type="warn">
+**为什么推荐 CC-Switch？**
+
+手动设置环境变量存在以下问题：
+- 每次打开新终端都需要重新设置
+- 多个 API 供应商切换麻烦
+- 容易遗忘或输错配置
+
+CC-Switch 提供了可视化界面，让环境变量管理变得简单高效。
+</Callout>
+
+## 前置要求
+
+### 1. 安装 Node.js
+
+Claude Code 需要 Node.js 运行环境。
+
+<Tabs items={['macOS', 'Windows', 'Linux']}>
+  <Tab value="macOS">
+**方法一：使用 Homebrew（推荐）**
+
+```bash
+# 更新 Homebrew
+brew update
+
+# 安装 Node.js
+brew install node
+```
+
+**方法二：官网下载**
+
+1. 访问 [https://nodejs.org/](https://nodejs.org/)
+2. 下载适合 macOS 的 LTS 版本
+3. 打开下载的 `.pkg` 文件
+4. 按照安装程序指引完成安装
+
+<Callout type="info">
+如果遇到权限问题，可能需要使用 `sudo` 命令。首次运行可能需要在系统偏好设置中允许。
+</Callout>
+  </Tab>
+
+  <Tab value="Windows">
+1. 访问 [https://nodejs.org/](https://nodejs.org/)
+2. 下载 Windows 版本的 LTS 安装包
+3. 运行安装程序
+4. 按照安装向导完成安装
+  </Tab>
+
+  <Tab value="Linux">
+**Ubuntu/Debian:**
+
+```bash
+# 更新包列表
+sudo apt update
+
+# 安装 Node.js
+sudo apt install nodejs npm
+```
+
+**其他发行版请参考:** [https://nodejs.org/en/download/package-manager](https://nodejs.org/en/download/package-manager)
+  </Tab>
+</Tabs>
+
+**验证 Node.js 安装**
+
+打开终端，运行以下命令：
+
+```bash
+node --version
+npm --version
+```
+
+如果显示版本号，说明 Node.js 安装成功！
+
+### 2. 安装 Claude Code
+
+在终端中运行以下命令：
+
+```bash
+# 全局安装 Claude Code
+npm install -g @anthropic-ai/claude-code
+```
+
+如果遇到权限问题（macOS/Linux），可以使用 `sudo`：
+
+```bash
+sudo npm install -g @anthropic-ai/claude-code
+```
+
+**验证安装**
+
+```bash
+claude --version
+```
+
+如果显示版本号，恭喜！Claude Code 已经成功安装。
+
+---
+
+## 配置方法一：使用 CC-Switch（推荐）
+
+CC-Switch 是一个 AI CLI 一体化管理平台，让您可以轻松切换不同的 API 供应商，无需手动修改配置文件。
+
+### 为什么选择 CC-Switch？
 
 - ✅ **一键切换配置** - 在不同 API 供应商之间快速切换
 - ✅ **可视化管理** - 图形化界面管理所有配置
 - ✅ **内置模板** - 预置常用 API 供应商配置模板
 - ✅ **系统托盘** - 便捷的快捷操作入口
 - ✅ **MCP 服务器管理** - 统一管理 Model Context Protocol 服务
+- ✅ **环境变量自动管理** - 无需手动设置和记忆环境变量
 
-## 安装 CC-Switch
+### 安装 CC-Switch
 
 <Tabs items={['macOS', 'Windows', 'Linux']}>
   <Tab value="macOS">
@@ -62,22 +171,22 @@ sudo dpkg -i cc-switch_x.x.x_amd64.deb
   </Tab>
 </Tabs>
 
-## 配置 Dubrify API
+### 配置 Dubrify API
 
 <Steps>
 
-### 打开 CC-Switch 并选择分组
+### 步骤 1: 打开 CC-Switch 并选择分组
 
 启动 CC-Switch 应用程序后，在顶部分组条中选择 **"Claude"** 分组。
 
 ![CC-Switch 界面](/images/ccswitch-interface.png)
 
-### 添加供应商配置
+### 步骤 2: 添加供应商配置
 
 1. 点击 **"添加供应商"** 或选择已有供应商
 2. 如果是自定义配置，选择 **"自定义供应商"** 选项
 
-### 配置 API 参数
+### 步骤 3: 配置 API 参数
 
 在配置界面中填写以下信息：
 
@@ -89,14 +198,14 @@ sudo dpkg -i cc-switch_x.x.x_amd64.deb
 如果您还没有 API 密钥，请访问 [ai.dubrify.com](https://ai.dubrify.com) 创建一个。
 </Callout>
 
-### 保存并启用配置
+### 步骤 4: 保存并启用配置
 
 1. 检查配置信息无误后，点击右下角的 **"添加"** 按钮
 2. 在主界面的配置列表中找到刚刚添加的配置
 3. 点击配置右侧的 **"启用"** 按钮
 4. 状态显示为 **"使用中"** 即表示配置已生效
 
-### 验证配置
+### 步骤 5: 验证配置
 
 在终端中运行以下命令验证配置是否成功：
 
@@ -108,7 +217,7 @@ claude
 
 </Steps>
 
-## 多供应商管理
+### 多供应商管理
 
 CC-Switch 的强大之处在于可以同时管理多个 API 供应商配置。您可以：
 
@@ -122,40 +231,139 @@ CC-Switch 的强大之处在于可以同时管理多个 API 供应商配置。�
 - **成本优化** - 根据任务类型选择不同价格的供应商
 - **备用方案** - 配置多个供应商作为备选，提高服务可用性
 
-## 环境要求
+---
+
+## 配置方法二：手动设置环境变量（不推荐）
 
 <Callout type="warn">
-在使用 CC-Switch 之前，请确保：
-- Node.js 环境已安装
-- Claude CLI 工具已安装（运行 `claude --version` 检查）
+**注意**：此方法仅作为临时方案或备选方案。我们强烈推荐使用 CC-Switch 来管理环境变量，因为手动设置存在以下问题：
+- 每次打开新终端窗口都需要重新设置
+- 无法方便地在多个 API 供应商之间切换
+- 容易输错或遗忘配置参数
 </Callout>
 
-如果您还未安装 Claude CLI，请访问 [Claude Code 官方文档](https://docs.anthropic.com/en/docs/claude-code) 了解安装方法。
+如果您确实需要使用手动配置方式，可以按照以下步骤操作：
 
-## 故障排查
+### 临时设置（仅当前终端会话有效）
 
-### 配置后无法连接
+在终端中运行以下命令：
+
+```bash
+export ANTHROPIC_BASE_URL="https://ai.dubrify.com/api"
+export ANTHROPIC_AUTH_TOKEN="你的API密钥"
+```
+
+<Callout type="info">
+- 将 `你的API密钥` 替换为您在 [ai.dubrify.com](https://ai.dubrify.com) 创建的实际密钥
+- 这些环境变量仅在当前终端会话中有效
+- 关闭终端后需要重新设置
+</Callout>
+
+### 验证配置
+
+设置完成后，运行以下命令验证：
+
+```bash
+claude
+```
+
+如果能正常进入 Claude Code 对话界面，说明配置成功。
+
+### 为什么不推荐永久设置？
+
+虽然可以将环境变量添加到 `~/.bashrc`、`~/.zshrc` 等配置文件中实现永久设置，但我们**不推荐**这样做，因为：
+
+1. **安全风险** - API 密钥明文存储在配置文件中
+2. **不灵活** - 无法方便地切换不同供应商
+3. **难以管理** - 修改配置需要手动编辑文件
+4. **容易出错** - 配置错误可能导致终端无法正常启动
+
+**建议**：如果您需要长期使用，请使用 [CC-Switch](#配置方法一使用-cc-switch推荐) 来管理配置。
+
+---
+
+## 查看 API 使用情况
+
+配置完成后，您可以随时在 Dubrify AI 管理后台查看您的 API Key 使用详情。
+
+### 访问使用统计页面
+
+访问 [https://ai.dubrify.com](https://ai.dubrify.com) 并登录您的账户，即可查看详细的使用统计信息。
+
+![API 使用统计](/images/api-usage-dashboard.png)
+
+### 可查看的信息
+
+**API Key 信息**
+- API Key 名称和状态
+- 权限范围
+- 创建时间和过期时间
+
+**使用统计概览**
+- 今日请求次数
+- Token 使用量（今日/累计）
+- 费用统计
+
+**详细用量分析**
+- **Token 使用分布** - 查看输入、输出、缓存创建、缓存读取的详细 Token 数
+- **模型使用统计** - 了解各个模型的调用情况和费用
+- **限制配置** - 查看每日费用限制、总费用限制等配置
+
+<Callout type="info">
+**实时监控您的使用情况**
+
+建议定期查看使用统计，以便：
+- 及时了解 API 消耗情况
+- 优化模型选择和使用策略
+- 控制成本支出
+- 发现异常使用模式
+</Callout>
+
+---
+
+## 常见问题
+
+### 配置后无法连接（CC-Switch）
 
 1. 检查 Base URL 是否正确填写（需包含完整的 URL）
 2. 确认 API Key 是否有效且未过期
 3. 验证网络连接是否正常
 
-### 切换配置后不生效
+### 切换配置后不生效（CC-Switch）
 
 1. 确保点击了 **"启用"** 按钮
 2. 重启 Claude Code 终端会话
 3. 检查系统托盘中 CC-Switch 的状态
 
+### 手动设置环境变量无效
+
+1. 确认环境变量是否正确设置：
+   ```bash
+   echo $ANTHROPIC_BASE_URL
+   echo $ANTHROPIC_AUTH_TOKEN
+   ```
+2. 检查是否在设置环境变量的同一终端会话中运行 `claude` 命令
+3. 确认环境变量值没有多余的空格或引号错误
+
+### Node.js 或 Claude Code 安装失败
+
+1. **权限问题**：使用 `sudo` 命令（macOS/Linux）
+2. **网络问题**：检查网络连接，或使用国内镜像源
+3. **版本冲突**：卸载旧版本后重新安装
+
 ### 需要更多帮助？
 
 如遇到其他问题，请参考：
 - [CC-Switch GitHub Issues](https://github.com/farion1231/cc-switch/issues)
-- [Dubrify API 文档](/docs/guide)
+- [Dubrify AI 支持](https://ai.dubrify.com)
+- [Claude Code 官方文档](https://docs.anthropic.com/en/docs/claude-code)
 
 ---
 
 ## 相关资源
 
-- [CC-Switch GitHub 仓库](https://github.com/farion1231/cc-switch)
-- [Dubrify API 快速开始](/docs/index)
-- [使用指南](/docs/guide)
+- [CC-Switch GitHub 仓库](https://github.com/farion1231/cc-switch) - CC-Switch 开源项目
+- [Dubrify AI 官网](https://ai.dubrify.com) - 获取 API 密钥和查看服务状态
+- [Dubrify API 快速开始](/docs/index) - 了解更多 API 功能
+- [使用指南](/docs/guide) - 详细的 API 使用文档
+- [Node.js 官网](https://nodejs.org/) - Node.js 下载和文档
