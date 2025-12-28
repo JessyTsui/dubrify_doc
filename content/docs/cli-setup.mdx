@@ -1,0 +1,161 @@
+---
+title: Claude Code/Codex 配置
+description: 使用 CC-Switch 轻松管理 Claude Code 和 Codex 的 API 配置，快速接入 Dubrify AI 服务
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# 使用 CC-Switch 管理 Claude Code/Codex
+
+**强烈推荐使用 CC-Switch** 来管理您的 Claude Code 和 Codex API 配置。CC-Switch 是一个 AI CLI 一体化管理平台，让您可以轻松切换不同的 API 供应商，无需手动修改配置文件。
+
+## 为什么选择 CC-Switch？
+
+CC-Switch 提供了以下核心功能：
+
+- ✅ **一键切换配置** - 在不同 API 供应商之间快速切换
+- ✅ **可视化管理** - 图形化界面管理所有配置
+- ✅ **内置模板** - 预置常用 API 供应商配置模板
+- ✅ **系统托盘** - 便捷的快捷操作入口
+- ✅ **MCP 服务器管理** - 统一管理 Model Context Protocol 服务
+
+## 安装 CC-Switch
+
+<Tabs items={['macOS', 'Windows', 'Linux']}>
+  <Tab value="macOS">
+使用 Homebrew 安装：
+
+```bash
+# 添加 tap 源
+brew tap farion1231/ccswitch
+
+# 安装 CC-Switch
+brew install --cask cc-switch
+```
+
+安装完成后，在应用程序文件夹中找到并运行 CC-Switch。
+  </Tab>
+
+  <Tab value="Windows">
+1. 访问 [GitHub Release 页面](https://github.com/farion1231/cc-switch/releases/latest)
+2. 下载 `.msi` 后缀的安装包
+3. 双击安装包进行安装
+4. 安装完成后运行 CC-Switch 应用程序
+  </Tab>
+
+  <Tab value="Linux">
+Debian/Ubuntu 系统：
+
+```bash
+# 下载 .deb 安装包（请替换 x.x.x 为实际版本号）
+wget https://github.com/farion1231/cc-switch/releases/latest/download/cc-switch_x.x.x_amd64.deb
+
+# 安装
+sudo dpkg -i cc-switch_x.x.x_amd64.deb
+```
+
+<Callout type="info">
+请访问 [Release 页面](https://github.com/farion1231/cc-switch/releases/latest) 查看最新版本号
+</Callout>
+  </Tab>
+</Tabs>
+
+## 配置 Dubrify API
+
+<Steps>
+
+### 打开 CC-Switch 并选择分组
+
+启动 CC-Switch 应用程序后，在顶部分组条中选择 **"Claude"** 分组。
+
+![CC-Switch 界面](/images/ccswitch-interface.png)
+
+### 添加供应商配置
+
+1. 点击 **"添加供应商"** 或选择已有供应商
+2. 如果是自定义配置，选择 **"自定义供应商"** 选项
+
+### 配置 API 参数
+
+在配置界面中填写以下信息：
+
+- **供应商名称**: Dubrify AI（或您喜欢的名称）
+- **请求地址 (Base URL)**: `https://ai.dubrify.com/api`
+- **API Key**: 您的 Dubrify API 密钥
+
+<Callout type="info">
+如果您还没有 API 密钥，请访问 [ai.dubrify.com](https://ai.dubrify.com) 创建一个。
+</Callout>
+
+### 保存并启用配置
+
+1. 检查配置信息无误后，点击右下角的 **"添加"** 按钮
+2. 在主界面的配置列表中找到刚刚添加的配置
+3. 点击配置右侧的 **"启用"** 按钮
+4. 状态显示为 **"使用中"** 即表示配置已生效
+
+### 验证配置
+
+在终端中运行以下命令验证配置是否成功：
+
+```bash
+claude
+```
+
+如果能正常进入 Claude Code 对话界面并收到回复，说明配置成功！
+
+</Steps>
+
+## 多供应商管理
+
+CC-Switch 的强大之处在于可以同时管理多个 API 供应商配置。您可以：
+
+1. **添加多个配置** - 配置不同的 API 供应商（如 Dubrify、官方 API 等）
+2. **一键切换** - 根据需要快速切换到不同的供应商
+3. **分组管理** - 为不同用途创建不同的配置分组
+
+### 常见使用场景
+
+- **开发/生产环境分离** - 使用不同的 API 密钥和配置
+- **成本优化** - 根据任务类型选择不同价格的供应商
+- **备用方案** - 配置多个供应商作为备选，提高服务可用性
+
+## 环境要求
+
+<Callout type="warn">
+在使用 CC-Switch 之前，请确保：
+- Node.js 环境已安装
+- Claude CLI 工具已安装（运行 `claude --version` 检查）
+</Callout>
+
+如果您还未安装 Claude CLI，请访问 [Claude Code 官方文档](https://docs.anthropic.com/en/docs/claude-code) 了解安装方法。
+
+## 故障排查
+
+### 配置后无法连接
+
+1. 检查 Base URL 是否正确填写（需包含完整的 URL）
+2. 确认 API Key 是否有效且未过期
+3. 验证网络连接是否正常
+
+### 切换配置后不生效
+
+1. 确保点击了 **"启用"** 按钮
+2. 重启 Claude Code 终端会话
+3. 检查系统托盘中 CC-Switch 的状态
+
+### 需要更多帮助？
+
+如遇到其他问题，请参考：
+- [CC-Switch GitHub Issues](https://github.com/farion1231/cc-switch/issues)
+- [Dubrify API 文档](/docs/guide)
+
+---
+
+## 相关资源
+
+- [CC-Switch GitHub 仓库](https://github.com/farion1231/cc-switch)
+- [Dubrify API 快速开始](/docs/index)
+- [使用指南](/docs/guide)
