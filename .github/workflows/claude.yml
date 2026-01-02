@@ -1,0 +1,131 @@
+# =============================================================================
+# Claude Code GitHub Action
+# =============================================================================
+# This workflow provides AI-powered code review and assistance using Claude.
+#
+# Features:
+#   1. Automatic PR Review - Reviews PRs based on change size
+#   2. @claude Mentions - Respond to @claude in comments
+#   3. Test: Verify @claude respond functionality
+#
+# Required Secrets:
+#   - ANTHROPIC_API_KEY: Your Anthropic API key
+#   - ANTHROPIC_BASE_URL: Custom API endpoint (optional, for third-party providers)
+#
+# Model Selection:
+#   - Small PRs (<200 lines): Claude Sonnet 4.5 (quick review)
+#   - Large PRs (>=200 lines): Claude Opus 4.5 (deep analysis)
+# =============================================================================
+
+name: Claude Code
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  # PR 自动审核
+  pr-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate changed lines and select model
+        id: diff
+        run: |
+          CHANGED_LINES=$(git diff --shortstat origin/${{ github.base_ref }}...HEAD | awk '{print $4 + $6}')
+          CHANGED_LINES=${CHANGED_LINES:-0}
+          echo "changed_lines=$CHANGED_LINES" >> $GITHUB_OUTPUT
+          echo "📊 Changed lines: $CHANGED_LINES"
+
+          if [ "$CHANGED_LINES" -lt 200 ]; then
+            echo "model=claude-sonnet-4-5-20250929" >> $GITHUB_OUTPUT
+            echo "review_mode=quick" >> $GITHUB_OUTPUT
+            echo "🔍 Selected: Sonnet 4.5 (Quick Review)"
+          else
+            echo "model=claude-opus-4-5-20251101" >> $GITHUB_OUTPUT
+            echo "review_mode=deep" >> $GITHUB_OUTPUT
+            echo "🔬 Selected: Opus 4.5 (Deep Analysis)"
+          fi
+
+      - name: Claude PR Review (Quick)
+        if: steps.diff.outputs.review_mode == 'quick'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: "--model ${{ steps.diff.outputs.model }} --dangerously-skip-permissions"
+          use_sticky_comment: "true"
+          show_full_output: "true"
+          prompt: |
+            Review this PR and provide your analysis directly. After your analysis, post a comment on this PR with your review.
+
+            ## Summary
+            - Briefly describe what this PR does
+
+            ## Quick Check
+            - Any obvious bugs or issues?
+            - Any security concerns?
+            - Is the code style consistent?
+
+            ## Recommendation
+            - Do you recommend merging? (Yes/No with brief reason)
+
+            Please respond in Chinese (中文).
+
+            IMPORTANT: Use the GitHub tools available to post your review as a comment on this PR.
+
+      - name: Claude PR Review (Deep Analysis)
+        if: steps.diff.outputs.review_mode == 'deep'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: "--model ${{ steps.diff.outputs.model }} --dangerously-skip-permissions"
+          use_sticky_comment: "true"
+          show_full_output: "true"
+          prompt: |
+            Review this PR and provide comprehensive analysis. After your analysis, post a comment on this PR with your review.
+
+            ## Change Summary
+            ## Code Change Analysis
+            ## Code Structure Evaluation
+            ## Testing Recommendations
+            ## Improvement Suggestions
+            ## Merge Recommendation
+
+            Please respond in Chinese (中文).
+
+            IMPORTANT: Use the GitHub tools available to post your review as a comment on this PR.
+
+  # @claude 交互式问答
+  claude-respond:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Respond to @claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          trigger_phrase: "@claude"
