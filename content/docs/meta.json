@@ -2,14 +2,16 @@
   "title": "Dubrify API Documentation",
   "pages": [
     "index",
-    "getting-started",
-    "cli-setup",
+    "---Quick Start---",
     "guide",
-    "sora",
-    "api-reference",
-    "examples",
-    "ai-features",
+    "cli-setup",
     "gemini-sdk",
-    "oss-url-cache"
+    "---Video Generation---",
+    "video",
+    "sora",
+    "grok-video",
+    "---Advanced---",
+    "oss-url-cache",
+    "examples"
   ]
 }

@@ -4,14 +4,13 @@ export const layoutConfig: { links: LinkItemType[] } = {
   links: [
     {
       type: 'main',
-      text: 'API Reference',
-      url: '/api-reference',
+      text: '使用指南',
+      url: '/docs',
     },
     {
       type: 'main',
-      text: 'API Portal',
-      url: 'https://api.pandalla.ai',
-      external: true,
+      text: '接口调试',
+      url: '/api-reference',
     },
   ],
 };

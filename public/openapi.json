@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Dubrify API",
-    "description": "Dubrify API 提供统一的 AI 模型接入服务，完全兼容 OpenAI API 格式。支持 GPT、Claude、Gemini 等主流模型。\n\n## 认证方式\n所有 API 请求需要在 Header 中携带 API Key：\n```\nAuthorization: Bearer YOUR_API_KEY\n```\n\n## 基础地址\n- 主地址：`https://api.pandalla.ai`\n- 备用地址：`https://api.dubrify.com`",
-    "version": "1.0.0",
+    "description": "Dubrify API 提供统一的 AI 模型接入服务，完全兼容 OpenAI API 格式。支持 GPT、Claude、Gemini 等主流模型，以及 Sora、Grok 视频生成。\n\n## 认证方式\n所有 API 请求需要在 Header 中携带 API Key：\n```\nAuthorization: Bearer YOUR_API_KEY\n```\n\n## 基础地址\n- 主地址：`https://api.dubrify.com`",
+    "version": "2.0.0",
     "contact": {
       "name": "Dubrify Support",
       "url": "https://doc.dubrify.com"
@@ -11,12 +11,12 @@
   },
   "servers": [
     {
-      "url": "https://api.pandalla.ai",
+      "url": "https://api.dubrify.com",
       "description": "主服务器"
     },
     {
-      "url": "https://api.dubrify.com",
-      "description": "备用服务器"
+      "url": "https://api.pandalla.ai",
+      "description": "旧地址（逐步废弃）"
     }
   ],
   "security": [
@@ -32,6 +32,10 @@
     {
       "name": "Images",
       "description": "图像生成相关接口"
+    },
+    {
+      "name": "Videos",
+      "description": "视频生成相关接口（Sora & Grok Video）"
     },
     {
       "name": "Models",
@@ -81,7 +85,7 @@
                 "streaming": {
                   "summary": "流式输出",
                   "value": {
-                    "model": "claude-3-5-sonnet-20241022",
+                    "model": "claude-sonnet-4-6",
                     "messages": [
                       {"role": "user", "content": "写一首关于春天的诗"}
                     ],
@@ -208,6 +212,207 @@
         }
       }
     },
+    "/v1/videos": {
+      "post": {
+        "operationId": "createSoraVideo",
+        "summary": "创建 Sora 视频任务",
+        "description": "使用 OpenAI Sora 模型创建视频生成任务。支持文生视频和图生视频。提交后返回 video_id，需轮询查询状态。",
+        "tags": ["Videos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/SoraVideoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SoraVideoResponse"
+                },
+                "example": {
+                  "id": "video_xxxxxxxxxxxxx",
+                  "status": "queued",
+                  "created_at": 1234567890,
+                  "model": "sora-2",
+                  "prompt": "一只猫在花园中玩耍"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/videos/generations": {
+      "post": {
+        "operationId": "createGrokVideo",
+        "summary": "创建 Grok 视频任务",
+        "description": "使用 xAI Grok Imagine Video 模型创建视频生成任务。支持文生视频和图生视频。提交后返回 request_id，需轮询查询状态。",
+        "tags": ["Videos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrokVideoRequest"
+              },
+              "examples": {
+                "text_to_video": {
+                  "summary": "文生视频",
+                  "value": {
+                    "model": "grok-imagine-video",
+                    "prompt": "A golden retriever running through autumn leaves",
+                    "duration": 6,
+                    "resolution": "720p",
+                    "aspect_ratio": "16:9"
+                  }
+                },
+                "image_to_video": {
+                  "summary": "图生视频",
+                  "value": {
+                    "model": "grok-imagine-video",
+                    "prompt": "Camera slowly zooms out, revealing the full scene",
+                    "duration": 6,
+                    "resolution": "720p",
+                    "image": {
+                      "url": "https://example.com/image.jpg"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrokVideoResponse"
+                },
+                "example": {
+                  "request_id": "grok_video_xxxxxxxxxxxxx"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/videos/{video_id}": {
+      "get": {
+        "operationId": "getVideoStatus",
+        "summary": "查询视频任务状态",
+        "description": "查询视频生成任务的当前状态和进度。同时适用于 Sora 和 Grok Video 任务。",
+        "tags": ["Videos"],
+        "parameters": [
+          {
+            "name": "video_id",
+            "in": "path",
+            "required": true,
+            "description": "视频任务 ID（Sora 的 video_id 或 Grok 的 request_id）",
+            "schema": {
+              "type": "string"
+            },
+            "example": "video_xxxxxxxxxxxxx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回任务状态",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "sora_in_progress": {
+                    "summary": "Sora - 生成中",
+                    "value": {
+                      "id": "video_xxxxxxxxxxxxx",
+                      "status": "in_progress",
+                      "model": "sora-2"
+                    }
+                  },
+                  "sora_completed": {
+                    "summary": "Sora - 已完成",
+                    "value": {
+                      "id": "video_xxxxxxxxxxxxx",
+                      "status": "completed",
+                      "model": "sora-2"
+                    }
+                  },
+                  "grok_pending": {
+                    "summary": "Grok - 生成中",
+                    "value": {
+                      "status": "pending"
+                    }
+                  },
+                  "grok_completed": {
+                    "summary": "Grok - 已完成",
+                    "value": {
+                      "model": "grok-imagine-video",
+                      "video": {
+                        "url": "https://cdn.example.com/video.mp4",
+                        "duration": "6",
+                        "respect_moderation": "true"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/videos/{video_id}/content": {
+      "get": {
+        "operationId": "downloadVideoContent",
+        "summary": "下载 Sora 视频内容",
+        "description": "下载已完成的 Sora 视频文件。仅适用于 Sora 任务，Grok Video 结果直接在状态查询中返回 URL。",
+        "tags": ["Videos"],
+        "parameters": [
+          {
+            "name": "video_id",
+            "in": "path",
+            "required": true,
+            "description": "Sora 视频任务 ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variant",
+            "in": "query",
+            "required": false,
+            "description": "下载内容类型",
+            "schema": {
+              "type": "string",
+              "enum": ["video", "thumbnail", "spritesheet"],
+              "default": "video"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回视频文件流",
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/models": {
       "get": {
         "operationId": "listModels",
@@ -232,16 +437,16 @@
                       "owned_by": "openai"
                     },
                     {
-                      "id": "gpt-4o-mini",
-                      "object": "model",
-                      "created": 1698959748,
-                      "owned_by": "openai"
-                    },
-                    {
-                      "id": "claude-3-5-sonnet-20241022",
+                      "id": "claude-sonnet-4-6",
                       "object": "model",
                       "created": 1698959748,
                       "owned_by": "anthropic"
+                    },
+                    {
+                      "id": "gemini-2.5-flash",
+                      "object": "model",
+                      "created": 1698959748,
+                      "owned_by": "google"
                     }
                   ]
                 }
@@ -333,7 +538,7 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "在 [令牌管理页面](https://api.pandalla.ai/token) 获取 API Key"
+        "description": "在 [令牌管理页面](https://ai.dubrify.com) 获取 API Key"
       }
     },
     "schemas": {
@@ -344,7 +549,7 @@
           "model": {
             "type": "string",
             "description": "模型 ID",
-            "enum": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo", "claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229", "gemini-1.5-flash-002", "gemini-1.5-pro-002"],
+            "enum": ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "o3", "o4-mini", "claude-sonnet-4-6", "claude-haiku-4-5", "claude-opus-4-6", "gemini-2.5-flash", "gemini-2.5-pro"],
             "example": "gpt-4o-mini"
           },
           "messages": {
@@ -547,6 +752,117 @@
                 }
               }
             }
+          }
+        }
+      },
+      "SoraVideoRequest": {
+        "type": "object",
+        "required": ["prompt"],
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "视频生成的文本提示词"
+          },
+          "model": {
+            "type": "string",
+            "description": "模型名称",
+            "enum": ["sora-2", "sora-2-pro"],
+            "default": "sora-2"
+          },
+          "seconds": {
+            "type": "integer",
+            "description": "视频时长（秒）",
+            "enum": [4, 8, 12],
+            "default": 4
+          },
+          "size": {
+            "type": "string",
+            "description": "视频尺寸（像素）",
+            "enum": ["720x1280", "1280x720", "1024x1792", "1792x1024"],
+            "default": "1280x720"
+          },
+          "input_reference": {
+            "type": "string",
+            "format": "binary",
+            "description": "参考图像文件（图生视频时使用）"
+          }
+        }
+      },
+      "SoraVideoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "视频任务 ID"
+          },
+          "status": {
+            "type": "string",
+            "description": "任务状态",
+            "enum": ["queued", "in_progress", "completed", "failed"]
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "创建时间戳"
+          },
+          "model": {
+            "type": "string",
+            "description": "使用的模型"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "提示词"
+          }
+        }
+      },
+      "GrokVideoRequest": {
+        "type": "object",
+        "required": ["model", "prompt"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "模型名称",
+            "enum": ["grok-imagine-video"]
+          },
+          "prompt": {
+            "type": "string",
+            "description": "视频生成的文本提示词"
+          },
+          "duration": {
+            "type": "integer",
+            "description": "视频时长（秒），1-15",
+            "minimum": 1,
+            "maximum": 15,
+            "default": 6
+          },
+          "resolution": {
+            "type": "string",
+            "description": "视频分辨率",
+            "enum": ["480p", "720p"],
+            "default": "480p"
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "description": "视频宽高比",
+            "enum": ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"]
+          },
+          "image": {
+            "type": "object",
+            "description": "参考图像（图生视频时使用）",
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "图片 URL"
+              }
+            }
+          }
+        }
+      },
+      "GrokVideoResponse": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "description": "请求 ID，用于查询任务状态"
           }
         }
       },

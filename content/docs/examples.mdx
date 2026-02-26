@@ -1,6 +1,6 @@
 ---
 title: 代码示例
-description: 各种编程语言的Dubrify API代码示例和最佳实践（Pandalla API 同样适用）
+description: 各种编程语言的 Dubrify API 代码示例和最佳实践
 ---
 
 import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
@@ -11,7 +11,7 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 本页面提供了使用 Dubrify API 的完整代码示例，涵盖各种常见用例和编程语言。
 
-## 🚀 快速开始示例
+## 快速开始示例
 
 ### 基础聊天补全
 
@@ -22,7 +22,7 @@ from openai import OpenAI
 
 # 初始化客户端
 client = OpenAI(
-    base_url="https://api.pandalla.ai/v1",
+    base_url="https://api.dubrify.com/v1",
     api_key="sk-your-api-key"
 )
 
@@ -46,7 +46,7 @@ import OpenAI from 'openai';
 
 // 初始化客户端
 const client = new OpenAI({
-    baseURL: 'https://api.pandalla.ai/v1',
+    baseURL: 'https://api.dubrify.com/v1',
     apiKey: 'sk-your-api-key'
 });
 
@@ -87,7 +87,7 @@ import (
 func main() {
     client := dubrify.NewClient(
         dubrify.WithAPIKey("sk-your-api-key"),
-        dubrify.WithBaseURL("https://api.pandalla.ai/v1"),
+        dubrify.WithBaseURL("https://api.dubrify.com/v1"),
     )
 
     resp, err := client.ChatCompletion(context.Background(), dubrify.ChatCompletionRequest{
@@ -110,7 +110,7 @@ func main() {
   </Tab>
   <Tab value="cURL">
 ```bash
-curl -X POST https://api.pandalla.ai/v1/chat/completions \
+curl -X POST https://api.dubrify.com/v1/chat/completions \
   -H "Authorization: Bearer sk-your-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -126,7 +126,7 @@ curl -X POST https://api.pandalla.ai/v1/chat/completions \
   </Tab>
 </Tabs>
 
-## 🌊 流式响应示例
+## 流式响应示例
 
 ### 实时文本流
 
@@ -136,7 +136,7 @@ curl -X POST https://api.pandalla.ai/v1/chat/completions \
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="https://api.pandalla.ai/v1",
+    base_url="https://api.dubrify.com/v1",
     api_key="sk-your-api-key"
 )
 
@@ -165,7 +165,7 @@ stream_chat()
 import OpenAI from 'openai';
 
 const client = new OpenAI({
-    baseURL: 'https://api.pandalla.ai/v1',
+    baseURL: 'https://api.dubrify.com/v1',
     apiKey: 'sk-your-api-key'
 });
 
@@ -200,7 +200,7 @@ streamChat();
   </Tab>
 </Tabs>
 
-## 🎨 多模态示例
+## 多模态示例
 
 ### 图像理解
 
@@ -211,7 +211,7 @@ import base64
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="https://api.pandalla.ai/v1",
+    base_url="https://api.dubrify.com/v1",
     api_key="sk-your-api-key"
 )
 
@@ -227,7 +227,7 @@ def analyze_image(image_path, question="请描述这张图片"):
     base64_image = encode_image(image_path)
     
     response = client.chat.completions.create(
-        model="gpt-4-vision-preview",
+        model="gpt-4o",
         messages=[
             {
                 "role": "user",
@@ -267,7 +267,7 @@ import OpenAI from 'openai';
 import fs from 'fs';
 
 const client = new OpenAI({
-    baseURL: 'https://api.pandalla.ai/v1',
+    baseURL: 'https://api.dubrify.com/v1',
     apiKey: 'sk-your-api-key'
 });
 
@@ -283,7 +283,7 @@ async function analyzeImage(imagePath, question = "请描述这张图片") {
         const base64Image = encodeImage(imagePath);
         
         const response = await client.chat.completions.create({
-            model: "gpt-4-vision-preview",
+            model: "gpt-4o",
             messages: [
                 {
                     role: "user",
@@ -324,7 +324,7 @@ analyzeImage('./example.jpg', '这张图片中有什么？')
   </Tab>
 </Tabs>
 
-## 🔄 多模型对比
+## 多模型对比
 
 ### 同时调用多个模型
 
@@ -334,7 +334,7 @@ import asyncio
 import time
 
 client = OpenAI(
-    base_url="https://api.pandalla.ai/v1",
+    base_url="https://api.dubrify.com/v1",
     api_key="sk-your-api-key"
 )
 
@@ -342,7 +342,7 @@ async def compare_models():
     """比较不同模型的响应"""
     
     prompt = "请用一句话解释量子计算的核心概念"
-    models = ["gpt-4o", "gpt-4o-mini", "claude-3-5-sonnet-20241022", "gemini-1.5-flash-002"]
+    models = ["gpt-4o", "gpt-4o-mini", "claude-sonnet-4-6", "gemini-2.5-flash"]
     
     async def get_response(model):
         """获取单个模型的响应"""
@@ -393,7 +393,7 @@ async def compare_models():
 asyncio.run(compare_models())
 ```
 
-## 🎬 视频生成示例
+## 视频生成示例
 
 ### Sora 视频生成
 
@@ -403,7 +403,7 @@ import time
 from openai import AsyncOpenAI
 
 client = AsyncOpenAI(
-    base_url="https://api.pandalla.ai/v1",
+    base_url="https://api.dubrify.com/v1",
     api_key="sk-your-api-key"
 )
 
@@ -453,7 +453,7 @@ async def create_video_with_progress():
 asyncio.run(create_video_with_progress())
 ```
 
-## 🛠️ 实用工具类
+## 实用工具类
 
 ### API客户端封装
 
@@ -464,7 +464,7 @@ from typing import Optional, List, Dict, Any
 from openai import OpenAI
 
 class DubrifyClient:
-    """Dubrify API客户端封装类（Pandalla API 同样适用）"""
+    """Dubrify API 客户端封装类"""
 
     def __init__(self, api_key: Optional[str] = None):
         """
@@ -478,7 +478,7 @@ class DubrifyClient:
             raise ValueError("API密钥未提供，请设置API_KEY环境变量或传入api_key参数")
         
         self.client = OpenAI(
-            base_url="https://api.pandalla.ai/v1",
+            base_url="https://api.dubrify.com/v1",
             api_key=self.api_key
         )
         
@@ -605,7 +605,7 @@ if __name__ == "__main__":
     print("摘要:", summary)
 ```
 
-## 🚨 错误处理示例
+## 错误处理示例
 
 ### 完整的错误处理
 
@@ -616,7 +616,7 @@ from openai import OpenAI
 from typing import Optional
 
 client = OpenAI(
-    base_url="https://api.pandalla.ai/v1",
+    base_url="https://api.dubrify.com/v1",
     api_key="sk-your-api-key"
 )
 
@@ -715,12 +715,11 @@ else:
 ```
 
 <Callout type="info">
-这些示例展示了Dubrify API的各种使用场景。你可以根据自己的需求调整和扩展这些代码。更多示例和最新功能，请参考 [API参考文档](/docs/api-reference)。
+更多 API 功能和最新接口，请参考 [API Reference](/api-reference)。
 </Callout>
 
-## 📚 更多资源
+## 更多资源
 
-- [API 使用指南](/docs/guide) - 深入了解API功能
-- [Sora 视频生成](/docs/sora) - 视频生成专题
-- [身份认证](/docs/authentication) - API密钥管理
-- [API 参考](/docs/api-reference) - 完整的API文档
+- [使用指南](/docs/guide) — API 接口和高级功能
+- [视频生成](/docs/video) — Sora 和 Grok Video 视频生成
+- [API Reference](/api-reference) — 交互式 API 文档

@@ -1,0 +1,54 @@
+---
+title: 视频生成
+description: Dubrify 视频生成 API 总览 — 支持 Sora 和 Grok Imagine Video 模型
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# 视频生成 API
+
+Dubrify 提供统一的视频生成能力，目前支持以下模型：
+
+<Cards>
+  <Card title="Sora" href="/docs/sora" description="OpenAI Sora 2 / Sora 2 Pro — 支持文生视频、图生视频、视频 Remix，最高 1080p 分辨率" />
+  <Card title="Grok Video" href="/docs/grok-video" description="xAI Grok Imagine Video — 支持文生视频、图生视频，最长 15 秒，多种宽高比" />
+</Cards>
+
+---
+
+## 模型对比
+
+| 特性 | Sora 2 / 2 Pro | Grok Imagine Video |
+|------|----------------|-------------------|
+| 提交端点 | `POST /v1/videos` | `POST /v1/videos/generations` |
+| 查询端点 | `GET /v1/videos/{id}` | `GET /v1/videos/{request_id}` |
+| 最大时长 | 4 / 8 / 12 秒 | 1-15 秒 |
+| 分辨率 | 720p / 1080p | 480p / 720p |
+| 尺寸控制 | `size` 参数（像素值） | `aspect_ratio` 参数（比例值） |
+| 图生视频 | 支持（文件流上传） | 支持（图片 URL） |
+| Remix | 支持 | 不支持 |
+| 视频获取 | 通过 `/content` 端点下载 | 响应中直接返回 URL |
+
+## 统一工作流
+
+无论使用哪个模型，视频生成都遵循相同的异步工作流：
+
+```
+1. 提交任务 → 获取 task_id / request_id
+2. 轮询状态 → 等待生成完成
+3. 获取结果 → 下载视频或获取 URL
+```
+
+<Callout type="info">
+视频生成是异步操作，通常需要 30 秒到数分钟。建议每 5-10 秒轮询一次状态。
+</Callout>
+
+## 在控制台中管理任务
+
+Dubrify 控制台提供了可视化的任务管理界面：
+
+- **Gallery 视图** — 以卡片网格展示所有视频任务，已完成的视频可直接预览和下载
+- **自动轮询** — 页面会自动刷新活跃任务的状态，无需手动操作
+- **浏览器通知** — 视频生成完成后会收到浏览器通知
+- **一键创建** — 在页面内直接选择模型和参数创建新任务

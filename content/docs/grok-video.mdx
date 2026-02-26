@@ -1,0 +1,311 @@
+---
+title: Grok Video API
+description: 使用 xAI Grok Imagine Video 模型生成视频的完整指南，包含 API 接口、参数说明和代码示例
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+# Grok Video 视频生成 API
+
+通过 Dubrify API 接入 xAI 的 Grok Imagine Video 模型，使用文本或图像生成高质量视频。
+
+## 概述
+
+Grok Video API 基于 xAI 的视频生成能力，支持：
+- 文本生成视频（Text-to-Video）
+- 图像生成视频（Image-to-Video）
+- 多种分辨率和宽高比选择
+- 1-15 秒的可变时长
+
+## 认证
+
+所有 API 请求需要在 Header 中包含认证信息：
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+---
+
+## API 端点
+
+### 1. 提交视频生成任务
+
+**端点**: `POST https://api.dubrify.com/v1/videos/generations`
+
+**请求参数**:
+
+| 参数 | 类型 | 必需 | 描述 |
+|------|------|------|------|
+| `model` | string | 是 | 模型名称，固定为 `grok-imagine-video` |
+| `prompt` | string | 是 | 视频生成的文本提示词 |
+| `duration` | integer | 否 | 视频时长，1-15 秒，默认 6 |
+| `resolution` | string | 否 | 分辨率：`480p`、`720p`，默认 `480p` |
+| `aspect_ratio` | string | 否 | 宽高比（见下方说明） |
+| `image` | object | 否 | 图生视频时提供，含 `url` 字段 |
+
+#### 支持的宽高比
+
+<Cards>
+  <Card title="16:9" description="横屏，适用于桌面播放" />
+  <Card title="9:16" description="竖屏，适用于移动端/短视频" />
+  <Card title="1:1" description="正方形，适用于社交媒体" />
+  <Card title="4:3 / 3:4" description="经典比例" />
+  <Card title="3:2 / 2:3" description="摄影比例" />
+</Cards>
+
+#### 示例请求
+
+<Tabs items={['cURL', 'Python']}>
+  <Tab value="cURL">
+```bash
+curl -X POST 'https://api.dubrify.com/v1/videos/generations' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "grok-imagine-video",
+    "prompt": "A cat playing in a sunlit garden with butterflies",
+    "duration": 6,
+    "resolution": "720p",
+    "aspect_ratio": "16:9"
+  }'
+```
+  </Tab>
+  <Tab value="Python">
+```python
+import requests
+
+url = "https://api.dubrify.com/v1/videos/generations"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+payload = {
+    "model": "grok-imagine-video",
+    "prompt": "A cat playing in a sunlit garden with butterflies",
+    "duration": 6,
+    "resolution": "720p",
+    "aspect_ratio": "16:9"
+}
+
+response = requests.post(url, headers=headers, json=payload)
+result = response.json()
+request_id = result["request_id"]
+print(f"Task submitted, request_id: {request_id}")
+```
+  </Tab>
+</Tabs>
+
+#### 响应示例
+```json
+{
+  "request_id": "grok_video_xxxxxxxxxxxxx"
+}
+```
+
+<Callout type="info">
+请立即保存返回的 `request_id`，后续查询任务状态和获取结果都需要用到。
+</Callout>
+
+### 2. 图像生成视频
+
+在请求中添加 `image` 参数即可使用图片作为视频的起始帧：
+
+```bash
+curl -X POST 'https://api.dubrify.com/v1/videos/generations' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "grok-imagine-video",
+    "prompt": "Camera slowly zooms out, revealing the full scene",
+    "duration": 6,
+    "resolution": "720p",
+    "image": {
+      "url": "https://example.com/your-image.jpg"
+    }
+  }'
+```
+
+### 3. 查询任务状态
+
+**端点**: `GET https://api.dubrify.com/v1/videos/{request_id}`
+
+视频生成是异步任务，提交后需要轮询查询状态。
+
+#### 示例请求
+```bash
+curl -X GET 'https://api.dubrify.com/v1/videos/grok_video_xxxxxxxxxxxxx' \
+  -H 'Authorization: Bearer YOUR_API_KEY'
+```
+
+#### 生成中的响应
+```json
+{
+  "status": "pending"
+}
+```
+
+#### 生成完成的响应
+```json
+{
+  "model": "grok-imagine-video",
+  "video": {
+    "url": "https://cdn.example.com/video.mp4",
+    "duration": "6",
+    "respect_moderation": "true"
+  }
+}
+```
+
+#### 状态说明
+
+| 状态 | 说明 |
+|------|------|
+| `pending` | 生成中，继续轮询 |
+| 无 `status` 字段 + 有 `video` | 生成完成，可获取视频 URL |
+
+<Callout type="warning">
+当 `respect_moderation` 为 `false` 时，表示内容未通过审核，视频 URL 将不可用。
+</Callout>
+
+---
+
+## 完整示例
+
+### Python：提交并轮询至完成
+
+```python
+import requests
+import time
+
+API_KEY = "YOUR_API_KEY"
+BASE_URL = "https://api.dubrify.com"
+HEADERS = {
+    "Authorization": f"Bearer {API_KEY}",
+    "Content-Type": "application/json"
+}
+
+def create_grok_video(prompt, duration=6, resolution="720p", aspect_ratio="16:9"):
+    """提交 Grok 视频生成任务"""
+    resp = requests.post(
+        f"{BASE_URL}/v1/videos/generations",
+        headers=HEADERS,
+        json={
+            "model": "grok-imagine-video",
+            "prompt": prompt,
+            "duration": duration,
+            "resolution": resolution,
+            "aspect_ratio": aspect_ratio,
+        }
+    )
+    resp.raise_for_status()
+    request_id = resp.json()["request_id"]
+    print(f"Task submitted: {request_id}")
+    return request_id
+
+def poll_until_done(request_id, interval=8, timeout=300):
+    """轮询任务状态直到完成"""
+    elapsed = 0
+    while elapsed < timeout:
+        resp = requests.get(
+            f"{BASE_URL}/v1/videos/{request_id}",
+            headers=HEADERS
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        # 生成完成：无 status 字段，有 video 字段
+        if "video" in data:
+            return data
+
+        status = data.get("status", "unknown")
+        print(f"  Status: {status} ({elapsed}s elapsed)")
+
+        time.sleep(interval)
+        elapsed += interval
+
+    raise TimeoutError(f"Video generation timed out after {timeout}s")
+
+if __name__ == "__main__":
+    request_id = create_grok_video(
+        prompt="A golden retriever running through autumn leaves in slow motion",
+        duration=6,
+        resolution="720p"
+    )
+
+    result = poll_until_done(request_id)
+    video_url = result["video"]["url"]
+    print(f"Video ready: {video_url}")
+```
+
+### Python：图像生成视频
+
+```python
+def create_grok_video_from_image(prompt, image_url, duration=6, resolution="720p"):
+    """使用参考图像生成视频"""
+    resp = requests.post(
+        f"{BASE_URL}/v1/videos/generations",
+        headers=HEADERS,
+        json={
+            "model": "grok-imagine-video",
+            "prompt": prompt,
+            "duration": duration,
+            "resolution": resolution,
+            "image": {"url": image_url}
+        }
+    )
+    resp.raise_for_status()
+    return resp.json()["request_id"]
+
+# 使用示例
+request_id = create_grok_video_from_image(
+    prompt="Camera slowly pushes in, the scene comes alive",
+    image_url="https://example.com/landscape.jpg",
+    duration=8,
+    resolution="720p"
+)
+result = poll_until_done(request_id)
+print(f"Video ready: {result['video']['url']}")
+```
+
+---
+
+## Sora 与 Grok Video 对比
+
+| 特性 | Sora | Grok Video |
+|------|------|------------|
+| 模型 | `sora-2` / `sora-2-pro` | `grok-imagine-video` |
+| 提交端点 | `POST /v1/videos` | `POST /v1/videos/generations` |
+| 查询端点 | `GET /v1/videos/{id}` | `GET /v1/videos/{request_id}` |
+| 最大时长 | 12 秒 | 15 秒 |
+| 分辨率 | 720p / 1080p | 480p / 720p |
+| 宽高比 | 通过 size 指定像素 | 通过 aspect_ratio 指定比例 |
+| 图生视频 | 支持（文件流） | 支持（URL） |
+| 视频下载 | `/v1/videos/{id}/content` | 响应中直接返回 URL |
+
+<Callout type="info">
+两种模型都通过 Dubrify 统一平台访问，认证方式相同。可根据需求选择合适的模型。
+</Callout>
+
+---
+
+## 最佳实践
+
+### 1. 轮询策略
+建议每 8-10 秒查询一次状态，避免过于频繁的请求。视频生成通常需要 30 秒到 3 分钟。
+
+### 2. 提示词技巧
+- 使用英文提示词通常效果更好
+- 描述具体的动作、场景和风格
+- 指定相机运动（如 "slow zoom in"、"tracking shot"）
+- 避免过于抽象的描述
+
+### 3. 错误处理
+- 提交后立即保存 `request_id`，避免因网络问题丢失
+- 设置合理的超时时间（建议 5 分钟以上）
+- 检查 `respect_moderation` 字段确认内容合规
+
+### 4. 分辨率选择
+- `480p` 适合快速预览和测试，生成速度更快
+- `720p` 适合正式产出，画质更高

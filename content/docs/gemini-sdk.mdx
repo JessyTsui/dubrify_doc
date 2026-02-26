@@ -1,6 +1,6 @@
 ---
 title: Gemini SDK 设置
-description: 使用 Dubrify API 的 Gemini 代理端点来调用官方 Gemini SDK（Pandalla API 同样适用）。
+description: 使用 Dubrify API 的 Gemini 代理端点来调用官方 Gemini SDK。
 ---
 
 # Gemini SDK 设置
@@ -26,7 +26,7 @@ from google import genai
 from google.genai import types
 
 client = genai.Client(
-    http_options=types.HttpOptions(base_url="https://api.pandalla.ai/gemini"),
+    http_options=types.HttpOptions(base_url="https://api.dubrify.com/gemini"),
     api_key="YOUR_API_KEY",
 )
 

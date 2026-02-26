@@ -1,6 +1,6 @@
 ---
 title: 使用指南
-description: Dubrify API详细使用说明，包含所有模型的调用方法和高级功能配置（Pandalla API 同样适用）
+description: Dubrify API 详细使用说明，包含所有模型的调用方法和高级功能配置
 ---
 
 import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
@@ -11,19 +11,17 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Dubrify API提供统一的API接口标准，**完全兼容OpenAI API格式**，支持无缝切换。通过一个接口地址即可访问包括OpenAI、Claude、Gemini、Midjourney等在内的所有主流AI模型。
 
-## 🌐 基础配置
+## 基础配置
 
 ### API地址
 将原始OpenAI API地址替换为Dubrify API地址：
 ```
 原地址: https://api.openai.com
-新地址: https://api.pandalla.ai
+新地址: https://api.dubrify.com
 ```
 
-> 备用渠道：`https://api.dubrify.com` 同样可用
-
 ### 身份认证
-在 [令牌管理页面](https://api.pandalla.ai/token) 生成您的专属API密钥
+在 [ai.dubrify.com](https://ai.dubrify.com) 生成您的专属 API 密钥
 
 <Callout type="warning">
 **重要提示**: 生成令牌时请注意选择分组，不同分组对应不同的服务渠道和计费标准
@@ -31,14 +29,14 @@ Dubrify API提供统一的API接口标准，**完全兼容OpenAI API格式**，�
 
 ---
 
-## 📋 快速开始
+## 快速开始
 
 ### 前置要求
 参考官方OpenAI文档进行开发环境配置：
 - [Python SDK](https://github.com/openai/openai-python) 
 - [Node.js SDK](https://github.com/openai/openai-node)
 
-### 🐍 Python SDK
+### Python SDK
 
 #### 安装依赖
 ```bash
@@ -51,7 +49,7 @@ from openai import OpenAI
 
 # 初始化客户端
 client = OpenAI(
-    base_url="https://api.pandalla.ai/v1",
+    base_url="https://api.dubrify.com/v1",
     api_key="sk-your-api-key"  # 替换为您的密钥
 )
 
@@ -67,12 +65,12 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-### 🌐 HTTP请求示例
+### HTTP 请求示例
 
 #### 标准聊天接口
 ```bash
 curl --request POST \
-    --url https://api.pandalla.ai/v1/chat/completions \
+    --url https://api.dubrify.com/v1/chat/completions \
     --header 'Authorization: Bearer sk-your-api-key' \
     --header 'Content-Type: application/json' \
     --data '{
@@ -96,11 +94,11 @@ curl --request POST \
 
 #### 多模态图像理解
 ```bash
-curl https://api.pandalla.ai/v1/chat/completions \
+curl https://api.dubrify.com/v1/chat/completions \
     --header 'Authorization: Bearer sk-your-api-key' \
     --header 'Content-Type: application/json' \
     --data '{
-        "model": "gpt-4-vision-preview",
+        "model": "gpt-4o",
         "max_tokens": 1024,
         "messages": [
             {
@@ -128,41 +126,52 @@ curl https://api.pandalla.ai/v1/chat/completions \
 
 ---
 
-## 🤖 模型支持
+## 模型支持
 
-### OpenAI系列
-支持所有OpenAI官方模型，使用相同的调用方式：
-- `gpt-4o`, `gpt-4o-mini` - 最新多模态模型
-- `gpt-4-turbo`, `gpt-4` - 高性能推理模型  
-- `gpt-3.5-turbo` - 经济实用模型
-- `o1-preview`, `o1-mini` - 推理优化模型
+### OpenAI 系列
+支持所有 OpenAI 官方模型：
+- `gpt-4o`, `gpt-4o-mini` — 多模态模型
+- `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano` — 最新一代模型
+- `o3`, `o4-mini` — 推理模型
 
 ### Anthropic Claude
-完全兼容OpenAI API格式，只需更换模型名称：
+完全兼容 OpenAI API 格式，只需更换模型名称：
 ```python
 response = client.chat.completions.create(
-    model="claude-3-5-sonnet-20241022",  # 使用Claude模型
+    model="claude-sonnet-4-6",  # 使用 Claude 模型
     messages=[{"role": "user", "content": "你好"}]
 )
 ```
 
-支持的Claude模型：
-- `claude-3-5-sonnet-20241022` - 最新Sonnet模型
-- `claude-3-5-haiku-20241022` - 快速响应模型
-- `claude-3-opus-20240229` - 最强性能模型
+支持的 Claude 模型：
+- `claude-opus-4-6` — 最强性能模型
+- `claude-sonnet-4-6` — 平衡性能与速度
+- `claude-haiku-4-5` — 快速响应模型
 
 ### Google Gemini
-同样支持OpenAI API格式调用：
+同样支持 OpenAI API 格式调用：
 ```python
 response = client.chat.completions.create(
-    model="gemini-1.5-flash-002",  # 使用Gemini模型
+    model="gemini-2.5-flash",  # 使用 Gemini 模型
     messages=[{"role": "user", "content": "Hello Gemini"}]
+)
+```
+
+支持的 Gemini 模型：
+- `gemini-2.5-pro` — 高性能推理模型
+- `gemini-2.5-flash` — 快速响应模型
+
+### xAI Grok
+```python
+response = client.chat.completions.create(
+    model="grok-3",  # 使用 Grok 模型
+    messages=[{"role": "user", "content": "Hello Grok"}]
 )
 ```
 
 ---
 
-## 🔍 高级功能
+## 高级功能
 
 ### Gemini专属功能
 
@@ -170,11 +179,11 @@ response = client.chat.completions.create(
 为Gemini模型启用实时搜索功能：
 
 ```bash
-curl -X POST https://api.pandalla.ai/v1/chat/completions \
+curl -X POST https://api.dubrify.com/v1/chat/completions \
     --header 'Content-Type: application/json' \
     --header 'Authorization: Bearer sk-your-api-key' \
     --data '{
-        "model": "gemini-1.5-flash-002",
+        "model": "gemini-2.5-flash",
         "messages": [
             {"role": "user", "content": "2024年最新的AI技术发展趋势是什么？"}
         ],
@@ -195,11 +204,11 @@ curl -X POST https://api.pandalla.ai/v1/chat/completions \
 启用Gemini的代码执行能力：
 
 ```bash
-curl -X POST https://api.pandalla.ai/v1/chat/completions \
+curl -X POST https://api.dubrify.com/v1/chat/completions \
     --header 'Content-Type: application/json' \
     --header 'Authorization: Bearer sk-your-api-key' \
     --data '{
-        "model": "gemini-1.5-flash-002",
+        "model": "gemini-2.5-flash",
         "messages": [
             {"role": "user", "content": "请计算斐波那契数列的前20项，并绘制图表"}
         ],
@@ -218,20 +227,20 @@ curl -X POST https://api.pandalla.ai/v1/chat/completions \
 
 ---
 
-## 🧠 推理模型特别说明
+## 推理模型特别说明
 
-### OpenAI推理模型
-针对 `o1`、`o1-mini`、`o3`、`o3-mini`、`o4-mini` 等推理模型的特殊配置：
+### OpenAI 推理模型
+针对 `o3`、`o4-mini` 等推理模型的特殊配置：
 
 #### 默认设置
-- ✅ **自动启用推理**: 默认开启，无法手动关闭
-- ⚠️ **参数限制**: 不支持 `temperature`、`top_k`、`top_p` 等参数
-- 📝 **推理过程**: 内部推理过程不返回给用户
+- 自动启用推理，默认开启，无法手动关闭
+- 不支持 `temperature`、`top_k`、`top_p` 等参数
+- 内部推理过程不返回给用户
 
 #### 推理强度控制
 ```python
 response = client.chat.completions.create(
-    model="o1-preview",
+    model="o3",
     messages=[{"role": "user", "content": "解决这个复杂的数学问题..."}],
     reasoning={
         "effort": "high"  # 可选: low, medium, high
@@ -240,24 +249,21 @@ response = client.chat.completions.create(
 ```
 
 <Callout type="info">
-**注意事项**:
-- 🔄 **Token设置**: 推荐设置较大的 `max_tokens` 值
-- ⚡ **响应时间**: 推理模型响应时间较长，请耐心等待
-- 📋 **内容合规**: 如返回400错误，请检查提示词是否符合使用规范
+推理模型响应时间较长，推荐设置较大的 `max_tokens` 值。如返回 400 错误，请检查提示词是否符合使用规范。
 </Callout>
 
-### Claude推理模型
-Claude推理模型默认**关闭推理**，需手动启用：
+### Claude 推理模型
+Claude 推理模型默认**关闭推理**，需手动启用：
 
 #### 启用推理
 ```python
 response = client.chat.completions.create(
-    model="claude-3-5-sonnet-20241022",
+    model="claude-sonnet-4-6",
     max_tokens=4096,
     messages=[{"role": "user", "content": "分析这个复杂问题..."}],
     reasoning={
         "effort": "medium",     # 推理强度: low/medium/high
-        "max_tokens": 2048      # 推理专用token数量
+        "max_tokens": 2048      # 推理专用 token 数量
     }
 )
 ```
@@ -296,7 +302,7 @@ response = client.chat.completions.create(
 
 ---
 
-## 💰 计费说明
+## 计费说明
 
 ### 计费模式
 
@@ -319,7 +325,7 @@ response = client.chat.completions.create(
 
 ---
 
-## ⚡ 最佳实践
+## 最佳实践
 
 ### 性能优化
 
@@ -370,7 +376,7 @@ for chunk in stream:
   </Tab>
 </Tabs>
 
-### 🔒 安全建议
+### 安全建议
 
 #### API密钥管理
 ```python
@@ -379,7 +385,7 @@ from openai import OpenAI
 
 # ✅ 使用环境变量存储密钥
 client = OpenAI(
-    base_url="https://api.pandalla.ai/v1",
+    base_url="https://api.dubrify.com/v1",
     api_key=os.getenv("API_KEY")
 )
 
@@ -405,7 +411,7 @@ def safe_chat_completion(user_input):
 
 ---
 
-## ❓ 常见问题
+## 常见问题
 
 ### 常见错误处理
 

@@ -29,7 +29,7 @@ if __name__ == "__main__":
         ],
         "OSS_URL": file_url,
     }
-    endpoint = f"https://api.pandalla.ai/v1beta/models/{model}:generateContent"
+    endpoint = f"https://api.dubrify.com/v1beta/models/{model}:generateContent"
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 ## Sora 示例
 
 ```bash
-curl -X POST 'https://api.pandalla.ai/v1/videos' \
+curl -X POST 'https://api.dubrify.com/v1/videos' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -F 'prompt="一只德文猫在人身上玩耍"' \
   -F 'model="sora-2"' \
