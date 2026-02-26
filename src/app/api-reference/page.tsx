@@ -34,11 +34,10 @@ export default function ApiReferencePage() {
         </div>
         <div className="flex items-center gap-4">
           <Link
-            href="https://api.pandalla.ai"
-            target="_blank"
+            href="/docs"
             className="text-sm text-zinc-400 hover:text-white transition-colors"
           >
-            API Portal →
+            Docs →
           </Link>
         </div>
       </header>

@@ -1,38 +1,38 @@
 ---
 title: Sora API
-description: 使用Sora模型生成高质量AI视频的完整指南，包含API接口、代码示例和最佳实践
+description: 使用 OpenAI Sora 模型生成高质量 AI 视频的完整指南，包含 API 接口、代码示例和最佳实践
 ---
 
 import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
-# Dubrify Sora 视频生成 API（Pandalla API 同样适用）
+# Sora 视频生成 API
 
-本文档介绍如何使用我们的 API 创建、查询和下载 AI 生成的视频。
+使用 OpenAI Sora 模型通过 Dubrify API 生成高质量 AI 视频。
 
-## 🎬 概述
+## 概述
 
-通过 Dubrify Sora API，您可以：
-- 使用文本提示生成高质量视频
-- 上传参考图像指导视频生成
-- 对现有视频进行 Remix 编辑
-- 支持多种分辨率和时长选项
+- 文本生成视频（Text-to-Video）
+- 参考图像生成视频（Image-to-Video）
+- 视频 Remix 编辑
+- 支持 `sora-2` 和 `sora-2-pro` 两种模型
+- 多种分辨率，最高 1080p
 
-## 🔑 认证
+## 认证
 
-所有 API 请求都需要在 Header 中包含认证信息：
+所有 API 请求需要在 Header 中包含认证信息：
 ```
 Authorization: Bearer YOUR_API_KEY
 ```
 
 ---
 
-## 📚 API 端点
+## API 端点
 
 ### 1. 创建视频生成任务
 
-**端点**: `POST https://api.pandalla.ai/v1/videos`
+**端点**: `POST https://api.dubrify.com/v1/videos`
 
 **请求参数**:
 
@@ -59,7 +59,7 @@ Authorization: Bearer YOUR_API_KEY
 
 #### 示例请求
 ```bash
-curl -X POST 'https://api.pandalla.ai/v1/videos' \
+curl -X POST 'https://api.dubrify.com/v1/videos' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -F 'prompt="一只德文猫在人身上玩耍"' \
   -F 'model="sora-2"' \
@@ -113,7 +113,7 @@ def create_video_with_image(prompt, image_path, model="sora-2", seconds=4, size=
         print(f"❌ 图像文件不存在: {image_path}")
         return None
     
-    url = "https://api.pandalla.ai/v1/videos"
+    url = "https://api.dubrify.com/v1/videos"
     headers = {
         "Authorization": "Bearer YOUR_API_KEY"
     }
@@ -162,13 +162,13 @@ if __name__ == "__main__":
 
 ### 3. 视频Remix
 
-**端点**: `GET https://api.pandalla.ai/v1/videos/{video_id}/remix`
+**端点**: `GET https://api.dubrify.com/v1/videos/{video_id}/remix`
 
 对已完成的视频进行风格化编辑和调整。
 
 #### 示例请求
 ```bash
-curl -X GET 'https://api.pandalla.ai/v1/videos/video_xxxxxxxxxxxxx/remix' \
+curl -X GET 'https://api.dubrify.com/v1/videos/video_xxxxxxxxxxxxx/remix' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -H "Content-Type: application/json" \
   -d '{
@@ -182,11 +182,11 @@ curl -X GET 'https://api.pandalla.ai/v1/videos/video_xxxxxxxxxxxxx/remix' \
 
 ### 4. 查询任务状态
 
-**端点**: `GET https://api.pandalla.ai/v1/videos/{video_id}`
+**端点**: `GET https://api.dubrify.com/v1/videos/{video_id}`
 
 #### 示例请求
 ```bash
-curl -X GET 'https://api.pandalla.ai/v1/videos/video_xxxxxxxxxxxxx' \
+curl -X GET 'https://api.dubrify.com/v1/videos/video_xxxxxxxxxxxxx' \
   -H 'Authorization: Bearer YOUR_API_KEY'
 ```
 
@@ -198,7 +198,7 @@ curl -X GET 'https://api.pandalla.ai/v1/videos/video_xxxxxxxxxxxxx' \
 
 ### 5. 下载生成的视频
 
-**端点**: `GET https://api.pandalla.ai/v1/videos/{video_id}/content`
+**端点**: `GET https://api.dubrify.com/v1/videos/{video_id}/content`
 
 #### 查询参数
 | 参数 | 类型 | 描述 |
@@ -207,14 +207,14 @@ curl -X GET 'https://api.pandalla.ai/v1/videos/video_xxxxxxxxxxxxx' \
 
 #### 示例请求
 ```bash
-curl -X GET 'https://api.pandalla.ai/v1/videos/video_xxxxxxxxxxxxx/content' \
+curl -X GET 'https://api.dubrify.com/v1/videos/video_xxxxxxxxxxxxx/content' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -o video.mp4
 ```
 
 ---
 
-## 🐍 SDK 使用示例
+## SDK 使用示例
 
 ### Python SDK 安装
 
@@ -231,7 +231,7 @@ from openai import OpenAI
 # 初始化客户端
 client = OpenAI(
     api_key="YOUR_API_KEY",
-    base_url="https://api.pandalla.ai/v1"
+    base_url="https://api.dubrify.com/v1"
 )
 
 def create_video(
@@ -301,7 +301,7 @@ from openai.types.video import Video
 # 初始化异步客户端
 client = AsyncOpenAI(
     api_key="YOUR_API_KEY",
-    base_url="https://api.pandalla.ai/v1"
+    base_url="https://api.dubrify.com/v1"
 )
 
 async def generate_video_with_polling(
@@ -352,7 +352,7 @@ async def generate_video_with_polling(
             print(f"📹 Video ID: {video.id}")
             print(f"🔗 下载命令:")
             print(f"    curl -L -H 'Authorization: Bearer YOUR_API_KEY' \\")
-            print(f"         'https://api.pandalla.ai/v1/videos/{video.id}/content' \\")
+            print(f"         'https://api.dubrify.com/v1/videos/{video.id}/content' \\")
             print(f"         -o {video.id}.mp4")
             return video.id
         else:
@@ -379,21 +379,21 @@ if __name__ == "__main__":
 
 ---
 
-## 💡 最佳实践
+## 最佳实践
 
-### 1. 💾 保存 Video ID
+### 1. 保存 Video ID
 创建任务后立即保存返回的 video_id，以防网络中断
 
-### 2. ⏰ 合理设置轮询间隔
+### 2. 合理设置轮询间隔
 建议每 5-10 秒查询一次状态，避免频繁请求
 
-### 3. 🛡️ 错误处理
+### 3. 错误处理
 始终包含异常处理，确保程序稳定性
 
-### 4. 🔄 批量处理
+### 4. 批量处理
 对于多个视频任务，建议并行创建，串行查询
 
-### 5. 📝 提示词优化
+### 5. 提示词优化
 - 使用具体、详细的描述
 - 包含动作、场景、风格等关键信息
 - 避免抽象或模糊的表述

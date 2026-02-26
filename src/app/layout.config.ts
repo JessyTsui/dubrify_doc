@@ -7,11 +7,5 @@ export const layoutConfig: { links: LinkItemType[] } = {
       text: 'API Reference',
       url: '/api-reference',
     },
-    {
-      type: 'main',
-      text: 'API Portal',
-      url: 'https://api.pandalla.ai',
-      external: true,
-    },
   ],
 };
