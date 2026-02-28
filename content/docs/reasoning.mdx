@@ -235,15 +235,26 @@ stream = client.chat.completions.create(
     ]
 )
 
+reasoning_started = False
+content_started = False
+
 for chunk in stream:
     if not chunk.choices:
         continue
     delta = chunk.choices[0].delta
+
     # 推理过程
     if hasattr(delta, "reasoning_content") and delta.reasoning_content:
+        if not reasoning_started:
+            print("=== 推理过程 ===")
+            reasoning_started = True
         print(delta.reasoning_content, end="", flush=True)
+
     # 最终回复
     if delta.content:
+        if not content_started:
+            print("\n\n=== 最终回复 ===")
+            content_started = True
         print(delta.content, end="", flush=True)
 ```
   </Tab>
@@ -280,15 +291,28 @@ const stream = await client.chat.completions.create({
   ]
 });
 
+let reasoningStarted = false;
+let contentStarted = false;
+
 for await (const chunk of stream) {
   if (!chunk.choices.length) continue;
   const delta = chunk.choices[0].delta;
+
   // 推理过程
   if (delta.reasoning_content) {
+    if (!reasoningStarted) {
+      console.log('=== 推理过程 ===');
+      reasoningStarted = true;
+    }
     process.stdout.write(delta.reasoning_content);
   }
+
   // 最终回复
   if (delta.content) {
+    if (!contentStarted) {
+      console.log('\n\n=== 最终回复 ===');
+      contentStarted = true;
+    }
     process.stdout.write(delta.content);
   }
 }
