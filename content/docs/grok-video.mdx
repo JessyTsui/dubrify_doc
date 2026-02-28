@@ -32,7 +32,7 @@ Authorization: Bearer YOUR_API_KEY
 
 ### 1. 提交视频生成任务
 
-**端点**: `POST https://api.dubrify.com/v1/videos/generations`
+**端点**: `POST https://api.dubrify.com/v1/videos`
 
 **请求参数**:
 
@@ -60,7 +60,7 @@ Authorization: Bearer YOUR_API_KEY
 <Tabs items={['cURL', 'Python']}>
   <Tab value="cURL">
 ```bash
-curl -X POST 'https://api.dubrify.com/v1/videos/generations' \
+curl -X POST 'https://api.dubrify.com/v1/videos' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -76,7 +76,7 @@ curl -X POST 'https://api.dubrify.com/v1/videos/generations' \
 ```python
 import requests
 
-url = "https://api.dubrify.com/v1/videos/generations"
+url = "https://api.dubrify.com/v1/videos"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY",
     "Content-Type": "application/json"
@@ -113,7 +113,7 @@ print(f"Task submitted, request_id: {request_id}")
 在请求中添加 `image` 参数即可使用图片作为视频的起始帧：
 
 ```bash
-curl -X POST 'https://api.dubrify.com/v1/videos/generations' \
+curl -X POST 'https://api.dubrify.com/v1/videos' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -189,7 +189,7 @@ HEADERS = {
 def create_grok_video(prompt, duration=6, resolution="720p", aspect_ratio="16:9"):
     """提交 Grok 视频生成任务"""
     resp = requests.post(
-        f"{BASE_URL}/v1/videos/generations",
+        f"{BASE_URL}/v1/videos",
         headers=HEADERS,
         json={
             "model": "grok-imagine-video",
@@ -245,7 +245,7 @@ if __name__ == "__main__":
 def create_grok_video_from_image(prompt, image_url, duration=6, resolution="720p"):
     """使用参考图像生成视频"""
     resp = requests.post(
-        f"{BASE_URL}/v1/videos/generations",
+        f"{BASE_URL}/v1/videos",
         headers=HEADERS,
         json={
             "model": "grok-imagine-video",
@@ -276,7 +276,7 @@ print(f"Video ready: {result['video']['url']}")
 | 特性 | Sora | Grok Video |
 |------|------|------------|
 | 模型 | `sora-2` / `sora-2-pro` | `grok-imagine-video` |
-| 提交端点 | `POST /v1/videos` | `POST /v1/videos/generations` |
+| 提交端点 | `POST /v1/videos` | `POST /v1/videos` |
 | 查询端点 | `GET /v1/videos/{id}` | `GET /v1/videos/{request_id}` |
 | 最大时长 | 12 秒 | 15 秒 |
 | 分辨率 | 720p / 1080p | 480p / 720p |
