@@ -212,6 +212,91 @@ response = client.chat.completions.create(
 | 精确 token 控制 | 不支持 | 支持指定 `max_tokens` |
 | 适用场景 | 快速启用推理 | 需要细粒度控制 |
 
+### 流式请求（Streaming）
+
+推理模型响应时间较长，推荐使用流式请求实时获取推理过程和回复内容。
+
+<Tabs items={['Python', 'cURL', 'JavaScript']}>
+  <Tab value="Python">
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.dubrify.com/v1",
+    api_key="sk-your-api-key"
+)
+
+stream = client.chat.completions.create(
+    model="claude-sonnet-4-6#thinking",
+    max_tokens=4096,
+    stream=True,
+    messages=[
+        {"role": "user", "content": "strawberry 这个单词里有几个字母 r？"}
+    ]
+)
+
+for chunk in stream:
+    delta = chunk.choices[0].delta
+    # 推理过程
+    if hasattr(delta, "reasoning_content") and delta.reasoning_content:
+        print(delta.reasoning_content, end="", flush=True)
+    # 最终回复
+    if delta.content:
+        print(delta.content, end="", flush=True)
+```
+  </Tab>
+  <Tab value="cURL">
+```bash
+curl -X POST https://api.dubrify.com/v1/chat/completions \
+  -H 'Authorization: Bearer sk-your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "claude-sonnet-4-6#thinking",
+    "max_tokens": 4096,
+    "stream": true,
+    "messages": [
+      {"role": "user", "content": "strawberry 这个单词里有几个字母 r？"}
+    ]
+  }'
+```
+  </Tab>
+  <Tab value="JavaScript">
+```javascript
+import OpenAI from 'openai';
+
+const client = new OpenAI({
+  baseURL: 'https://api.dubrify.com/v1',
+  apiKey: 'sk-your-api-key'
+});
+
+const stream = await client.chat.completions.create({
+  model: 'claude-sonnet-4-6#thinking',
+  max_tokens: 4096,
+  stream: true,
+  messages: [
+    { role: 'user', content: 'strawberry 这个单词里有几个字母 r？' }
+  ]
+});
+
+for await (const chunk of stream) {
+  const delta = chunk.choices[0].delta;
+  // 推理过程
+  if (delta.reasoning_content) {
+    process.stdout.write(delta.reasoning_content);
+  }
+  // 最终回复
+  if (delta.content) {
+    process.stdout.write(delta.content);
+  }
+}
+```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+流式响应中，推理内容通过 `delta.reasoning_content` 字段返回，最终回复通过 `delta.content` 返回，两者按顺序输出。`reasoning` 参数方式同样支持流式请求，添加 `stream=True` 即可。
+</Callout>
+
 ### 注意事项
 
 <Callout type="warning">
@@ -219,7 +304,7 @@ response = client.chat.completions.create(
 </Callout>
 
 - 未指定 `max_tokens` 时，系统使用 Claude 模型允许的最大 token 数（如 claude-sonnet-4-6 为 128,000）
-- 推理模型响应时间较长，建议设置合理的超时时间
+- 推理模型响应时间较长，建议使用流式请求提升体验
 - 推理过程的 token 也会计入用量计费
 
 ---
