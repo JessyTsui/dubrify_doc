@@ -236,6 +236,8 @@ stream = client.chat.completions.create(
 )
 
 for chunk in stream:
+    if not chunk.choices:
+        continue
     delta = chunk.choices[0].delta
     # 推理过程
     if hasattr(delta, "reasoning_content") and delta.reasoning_content:
@@ -279,6 +281,7 @@ const stream = await client.chat.completions.create({
 });
 
 for await (const chunk of stream) {
+  if (!chunk.choices.length) continue;
   const delta = chunk.choices[0].delta;
   // 推理过程
   if (delta.reasoning_content) {
