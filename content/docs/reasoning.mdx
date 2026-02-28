@@ -41,6 +41,11 @@ response = client.chat.completions.create(
     ]
 )
 
+# 输出推理过程
+print("=== 推理过程 ===")
+print(response.choices[0].message.reasoning_content)
+# 输出最终回复
+print("=== 最终回复 ===")
 print(response.choices[0].message.content)
 ```
   </Tab>
@@ -75,6 +80,11 @@ const response = await client.chat.completions.create({
   ]
 });
 
+// 输出推理过程
+console.log('=== 推理过程 ===');
+console.log(response.choices[0].message.reasoning_content);
+// 输出最终回复
+console.log('=== 最终回复 ===');
 console.log(response.choices[0].message.content);
 ```
   </Tab>
@@ -110,6 +120,11 @@ response = client.chat.completions.create(
     }
 )
 
+# 输出推理过程
+print("=== 推理过程 ===")
+print(response.choices[0].message.reasoning_content)
+# 输出最终回复
+print("=== 最终回复 ===")
 print(response.choices[0].message.content)
 ```
   </Tab>
@@ -150,6 +165,11 @@ const response = await client.chat.completions.create({
   }
 });
 
+// 输出推理过程
+console.log('=== 推理过程 ===');
+console.log(response.choices[0].message.reasoning_content);
+// 输出最终回复
+console.log('=== 最终回复 ===');
 console.log(response.choices[0].message.content);
 ```
   </Tab>
