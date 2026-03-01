@@ -43,3 +43,7 @@ resources:
   features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 - [Fumadocs](https://fumadocs.dev) - learn about Fumadocs
+
+## Test Marker
+
+- Codex auto review trigger test created on 2026-03-01.
